@@ -2086,16 +2086,8 @@ function PasswordGate({ onUnlock }) {
   );
 }
 
-// ── MAIN APP ──────────────────────────────────────────────────────
-export default function App() {
-  // Admin panel bypass — no password needed for admin
-  if (window.location.pathname === "/admin") return <AdminApp />;
-
-  const [unlocked, setUnlocked] = useState(() => sessionStorage.getItem("pf_unlocked") === "true");
-  const unlock = () => { sessionStorage.setItem("pf_unlocked", "true"); setUnlocked(true); };
-
-  if (!unlocked) return <PasswordGate onUnlock={unlock} />;
-
+// ── CUSTOMER SITE ─────────────────────────────────────────────────
+function CustomerSite() {
   const [page, setPage] = useState("home");
   const [cart, setCart] = useState([]);
   const navigate = (p) => { setPage(p); window.scrollTo({top:0, behavior:"instant"}); };
@@ -2113,4 +2105,14 @@ export default function App() {
       <FloatingCart cart={cart} setCart={setCart} setPage={navigate} />
     </div>
   );
+}
+
+// ── MAIN APP ──────────────────────────────────────────────────────
+export default function App() {
+  const [unlocked, setUnlocked] = useState(() => sessionStorage.getItem("pf_unlocked") === "true");
+  const unlock = () => { sessionStorage.setItem("pf_unlocked", "true"); setUnlocked(true); };
+
+  if (window.location.pathname === "/admin") return <AdminApp />;
+  if (!unlocked) return <PasswordGate onUnlock={unlock} />;
+  return <CustomerSite />;
 }
