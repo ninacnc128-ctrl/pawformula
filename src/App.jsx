@@ -2057,10 +2057,44 @@ function AdminApp() {
   return loggedIn ? <AdminDashboard onLogout={() => setLoggedIn(false)} /> : <AdminLoginPage onLogin={() => setLoggedIn(true)} />;
 }
 
+// ── SITE PASSWORD GATE ────────────────────────────────────────────
+const SITE_PASSWORD = "paw2024";
+
+function PasswordGate({ onUnlock }) {
+  const [pw, setPw] = useState("");
+  const [error, setError] = useState(false);
+  const check = () => pw === SITE_PASSWORD ? onUnlock() : setError(true);
+  return (
+    <div style={{ minHeight: "100vh", background: C.cream, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Noto Sans TC', sans-serif" }}>
+      <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 20, padding: "48px 40px", width: 360, textAlign: "center" }}>
+        <div style={{ fontFamily: "Georgia, serif", fontSize: 28, fontWeight: 600, color: C.dark, marginBottom: 8 }}>
+          Paw<span style={{ color: C.sage }}>Formula</span>
+        </div>
+        <div style={{ fontSize: 13, color: C.mid, marginBottom: 32 }}>網站目前僅供內部預覽</div>
+        {error && <div style={{ background: "#FEE2E2", color: "#991B1B", fontSize: 12, padding: "8px 12px", borderRadius: 8, marginBottom: 14 }}>密碼錯誤，請再試一次</div>}
+        <input
+          type="password" value={pw} onChange={e => { setPw(e.target.value); setError(false); }}
+          onKeyDown={e => e.key === "Enter" && check()}
+          placeholder="請輸入預覽密碼"
+          style={{ width: "100%", padding: "12px 16px", border: `1.5px solid ${error ? "#FCA5A5" : C.border}`, borderRadius: 10, fontSize: 14, fontFamily: "inherit", color: C.dark, background: C.cream, outline: "none", boxSizing: "border-box", marginBottom: 12 }}
+        />
+        <button onClick={check} style={{ width: "100%", padding: 13, background: C.sage, color: "white", border: "none", borderRadius: 50, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+          進入網站
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── MAIN APP ──────────────────────────────────────────────────────
 export default function App() {
-  // If URL contains /admin, show admin panel
+  // Admin panel bypass — no password needed for admin
   if (window.location.pathname === "/admin") return <AdminApp />;
+
+  const [unlocked, setUnlocked] = useState(() => sessionStorage.getItem("pf_unlocked") === "true");
+  const unlock = () => { sessionStorage.setItem("pf_unlocked", "true"); setUnlocked(true); };
+
+  if (!unlocked) return <PasswordGate onUnlock={unlock} />;
 
   const [page, setPage] = useState("home");
   const [cart, setCart] = useState([]);
