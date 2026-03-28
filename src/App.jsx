@@ -848,8 +848,28 @@ function IntakePage({ setPage, cart, setCart }) {
                   {selectedPlan?`NT$${selectedPlan.price.toLocaleString()}`:"—"}
                 </div>
                 <div style={{ fontSize:12, color:"#6B6B6B", marginBottom:18 }}>/ 月 ∙ 隨時可暫停或取消</div>
-                <button onClick={()=>{
+                <button onClick={async ()=>{
                   if(!plan){ alert(`請先為${petName||"您的毛孩"}選擇食譜 🐾`); return; }
+
+                  // Save to Supabase customized_orders
+                  const petProfile = {
+                    petName, species, breed, sex, weight, idealWeight, age, size,
+                    activity, env, diet, dietNote, treatFreq,
+                    health, healthNote, allergies: allergiesActive, allergyNote, goals,
+                  };
+                  const nutritionData = {
+                    rer: Math.round(70 * Math.pow(parseFloat(weight)||0, 0.75)),
+                    plan, delivery, addons,
+                  };
+                  await supabase.from("customized_orders").insert({
+                    status: "new",
+                    pet_profile: petProfile,
+                    nutrition_data: nutritionData,
+                    assigned_recipe: plan,
+                    delivery,
+                    plan_price: selectedPlan?.price || 0,
+                  });
+
                   setCart(c=>[...c,{
                     emoji: selectedPlan.emoji, name: selectedPlan.name,
                     stage: "", petName, type:`客製化訂閱 ${delivery==="weekly"?"每週":delivery==="biweekly"?"每兩週":"每月"}`,
