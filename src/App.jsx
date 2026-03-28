@@ -2113,6 +2113,1171 @@ export default function App() {
   const unlock = () => { sessionStorage.setItem("pf_unlocked", "true"); setUnlocked(true); };
 
   if (window.location.pathname === "/admin") return <AdminApp />;
+  if (window.location.pathname === "/dashboard") return <DashboardApp />;
   if (!unlocked) return <PasswordGate onUnlock={unlock} />;
   return <CustomerSite />;
+}
+
+// ── DASHBOARD (PawFormula_dashboard) ──────────────────────────────
+
+// ── DESIGN TOKENS (light theme) ───────────────────────────────────
+const DC = {
+  bg:"#F4F6F9", surface:"#FFFFFF", surface2:"#F0F3F7",
+  border:"#E2E8F0", border2:"#CBD5E1",
+  sage:"#4A7150", sageL:"#E8F2EA", sageD:"#2D4F33", sageMid:"#7A9E7E",
+  earth:"#9A6B3C", earthL:"#FDF0E6", earthD:"#7A4E24",
+  gold:"#92700A", goldL:"#FEF9E7",
+  red:"#C53030", redL:"#FFF5F5",
+  blue:"#2B6CB0", blueL:"#EBF4FF",
+  purple:"#553C9A", purpleL:"#FAF5FF",
+  teal:"#2C7A7B", tealL:"#E6FFFA",
+  dark:"#1A202C", mid:"#4A5568", light:"#718096", lighter:"#A0AEC0",
+  // Species colors
+  dogBg:"#EBF4FF", dogBorder:"#2B6CB0", dogText:"#1A365D",
+  catBg:"#FAF5FF", catBorder:"#553C9A", catText:"#44337A",
+};
+
+// ── INGREDIENT DATA FROM EXCEL ────────────────────────────────────
+const DOG_INGREDIENTS = [{"name":"雞（熟）","moisture":65.3,"kcal":165.0,"protein":31.0,"fat":3.57,"cho":0.0,"fiber":0.0,"dm":34.7,"dm_protein":89.34,"dm_fat":10.29,"dm_cho":0.0,"prot_1000":187.9,"fat_1000":21.6,"cho_1000":0.0,"ca_1000":0.091,"p_1000":1.382,"na_1000":0.4485},{"name":"牛（熟）","moisture":73.3,"kcal":116.0,"protein":23.7,"fat":2.41,"cho":0.0,"fiber":0.0,"dm":26.7,"dm_protein":88.76,"dm_fat":9.03,"dm_cho":0.0,"prot_1000":204.3,"fat_1000":20.8,"cho_1000":0.0,"ca_1000":0.112,"p_1000":1.897,"na_1000":0.4741},{"name":"豬（生）","moisture":68.8,"kcal":168.0,"protein":21.1,"fat":9.47,"cho":0.0,"fiber":0.0,"dm":31.2,"dm_protein":67.63,"dm_fat":30.35,"dm_cho":0.0,"prot_1000":125.6,"fat_1000":56.4,"cho_1000":0.0,"ca_1000":0.024,"p_1000":1.173,"na_1000":0.2381},{"name":"羊（熟）","moisture":58.0,"kcal":206.0,"protein":28.0,"fat":9.0,"cho":0.0,"fiber":0.0,"dm":42.0,"dm_protein":66.67,"dm_fat":21.43,"dm_cho":0.0,"prot_1000":135.9,"fat_1000":43.7,"cho_1000":0.0,"ca_1000":0.01,"p_1000":1.068,"na_1000":0.3883},{"name":"鴨（熟）","moisture":64.0,"kcal":201.0,"protein":24.0,"fat":11.0,"cho":0.0,"fiber":0.0,"dm":36.0,"dm_protein":66.67,"dm_fat":30.56,"dm_cho":0.0,"prot_1000":119.4,"fat_1000":54.7,"cho_1000":0.0,"ca_1000":0.065,"p_1000":0.995,"na_1000":0.398},{"name":"鮭魚","moisture":68.0,"kcal":206.0,"protein":22.0,"fat":12.0,"cho":0.0,"fiber":0.0,"dm":32.0,"dm_protein":68.75,"dm_fat":37.5,"dm_cho":0.0,"prot_1000":106.8,"fat_1000":58.3,"cho_1000":0.0,"ca_1000":0.073,"p_1000":1.214,"na_1000":0.2913},{"name":"鮪魚","moisture":70.0,"kcal":128.0,"protein":24.0,"fat":3.0,"cho":0.0,"fiber":0.0,"dm":30.0,"dm_protein":80.0,"dm_fat":10.0,"dm_cho":0.0,"prot_1000":187.5,"fat_1000":23.4,"cho_1000":0.0,"ca_1000":0.102,"p_1000":2.031,"na_1000":0.4688},{"name":"綠貽貝","moisture":82.0,"kcal":90.0,"protein":16.5,"fat":3.0,"cho":5.0,"fiber":0.3,"dm":18.0,"dm_protein":91.67,"dm_fat":16.67,"dm_cho":27.78,"prot_1000":183.3,"fat_1000":33.3,"cho_1000":55.6,"ca_1000":0.556,"p_1000":2.5,"na_1000":4.4444},{"name":"鵪鶉蛋","moisture":74.4,"kcal":158.0,"protein":13.1,"fat":11.1,"cho":0.4,"fiber":0.0,"dm":25.6,"dm_protein":51.17,"dm_fat":43.36,"dm_cho":1.56,"prot_1000":82.9,"fat_1000":70.3,"cho_1000":2.5,"ca_1000":0.405,"p_1000":1.43,"na_1000":0.8924},{"name":"雞蛋","moisture":76.2,"kcal":143.0,"protein":12.6,"fat":9.5,"cho":0.7,"fiber":0.0,"dm":23.8,"dm_protein":52.94,"dm_fat":39.92,"dm_cho":2.94,"prot_1000":88.1,"fat_1000":66.4,"cho_1000":4.9,"ca_1000":0.392,"p_1000":1.385,"na_1000":1.0},{"name":"雞心","moisture":71.0,"kcal":190.0,"protein":13.3,"fat":14.8,"cho":0.1,"fiber":0.0,"dm":29.0,"dm_protein":45.86,"dm_fat":51.03,"dm_cho":0.34,"prot_1000":70.0,"fat_1000":77.9,"cho_1000":0.5,"ca_1000":0.021,"p_1000":0.605,"na_1000":0.2632},{"name":"雞肝","moisture":76.5,"kcal":119.0,"protein":16.9,"fat":4.83,"cho":0.73,"fiber":0.0,"dm":23.5,"dm_protein":71.91,"dm_fat":20.55,"dm_cho":3.11,"prot_1000":142.0,"fat_1000":40.6,"cho_1000":6.1,"ca_1000":0.067,"p_1000":2.496,"na_1000":0.5966},{"name":"豬肝","moisture":70.7,"kcal":137.0,"protein":20.8,"fat":5.3,"cho":1.7,"fiber":0.0,"dm":29.3,"dm_protein":70.99,"dm_fat":18.09,"dm_cho":5.8,"prot_1000":151.8,"fat_1000":38.7,"cho_1000":12.4,"ca_1000":0.029,"p_1000":2.394,"na_1000":0.6131},{"name":"小麥","moisture":12.6,"kcal":362.0,"protein":14.1,"fat":2.6,"cho":69.2,"fiber":11.0,"dm":87.4,"dm_protein":16.13,"dm_fat":2.97,"dm_cho":79.18,"prot_1000":39.0,"fat_1000":7.2,"cho_1000":191.2,"ca_1000":0.052,"p_1000":0.666,"na_1000":0.0028},{"name":"薏仁","moisture":11.5,"kcal":378.0,"protein":14.1,"fat":6.1,"cho":66.2,"fiber":9.0,"dm":88.5,"dm_protein":15.93,"dm_fat":6.89,"dm_cho":74.8,"prot_1000":37.3,"fat_1000":16.1,"cho_1000":175.1,"ca_1000":0.05,"p_1000":0.796,"na_1000":0.0053},{"name":"白米","moisture":14.1,"kcal":354.0,"protein":7.0,"fat":0.7,"cho":77.8,"fiber":0.5,"dm":85.9,"dm_protein":8.15,"dm_fat":0.81,"dm_cho":90.57,"prot_1000":19.8,"fat_1000":2.0,"cho_1000":219.8,"ca_1000":0.014,"p_1000":0.229,"na_1000":0.0056},{"name":"蕃薯","moisture":70.0,"kcal":119.0,"protein":1.3,"fat":0.1,"cho":27.5,"fiber":1.5,"dm":30.0,"dm_protein":4.33,"dm_fat":0.33,"dm_cho":91.67,"prot_1000":10.9,"fat_1000":0.8,"cho_1000":231.1,"ca_1000":0.143,"p_1000":0.336,"na_1000":0.6134},{"name":"糙米","moisture":14.8,"kcal":355.0,"protein":7.8,"fat":2.3,"cho":74.0,"fiber":1.7,"dm":85.2,"dm_protein":9.15,"dm_fat":2.7,"dm_cho":86.85,"prot_1000":22.0,"fat_1000":6.5,"cho_1000":208.5,"ca_1000":0.082,"p_1000":0.715,"na_1000":0.0085},{"name":"豆芽","moisture":93.1,"kcal":24.0,"protein":2.3,"fat":0.2,"cho":4.1,"fiber":1.9,"dm":6.9,"dm_protein":33.33,"dm_fat":2.9,"dm_cho":59.42,"prot_1000":95.8,"fat_1000":8.3,"cho_1000":170.8,"ca_1000":2.333,"p_1000":0.958,"na_1000":0.6667},{"name":"芋頭","moisture":66.5,"kcal":127.0,"protein":1.8,"fat":0.15,"cho":34.0,"fiber":3.5,"dm":33.5,"dm_protein":5.37,"dm_fat":0.45,"dm_cho":101.49,"prot_1000":14.2,"fat_1000":1.2,"cho_1000":267.7,"ca_1000":0.331,"p_1000":0.646,"na_1000":0.0945},{"name":"羽衣甘藍","moisture":89.53,"kcal":35.0,"protein":2.92,"fat":1.49,"cho":4.42,"fiber":4.1,"dm":10.5,"dm_protein":27.89,"dm_fat":14.23,"dm_cho":42.22,"prot_1000":83.4,"fat_1000":42.6,"cho_1000":126.3,"ca_1000":7.257,"p_1000":1.571,"na_1000":1.5143},{"name":"地瓜葉","moisture":86.8,"kcal":42.0,"protein":2.49,"fat":0.51,"cho":8.83,"fiber":5.28,"dm":13.2,"dm_protein":18.86,"dm_fat":3.86,"dm_cho":66.89,"prot_1000":59.3,"fat_1000":12.1,"cho_1000":210.2,"ca_1000":18.571,"p_1000":1.929,"na_1000":0.1429},{"name":"青花苗","moisture":92.8,"kcal":36.0,"protein":2.57,"fat":0.0,"cho":3.57,"fiber":3.6,"dm":7.2,"dm_protein":35.69,"dm_fat":0.0,"dm_cho":49.58,"prot_1000":71.4,"fat_1000":0.0,"cho_1000":99.2,"ca_1000":2.972,"p_1000":0.0,"na_1000":0.0},{"name":"空心菜","moisture":92.47,"kcal":19.0,"protein":3.14,"fat":0.2,"cho":2.6,"fiber":2.1,"dm":7.5,"dm_protein":41.7,"dm_fat":2.66,"dm_cho":34.53,"prot_1000":165.3,"fat_1000":10.5,"cho_1000":136.8,"ca_1000":4.053,"p_1000":2.053,"na_1000":5.9474},{"name":"苦瓜","moisture":94.4,"kcal":19.0,"protein":0.9,"fat":0.1,"cho":4.1,"fiber":2.3,"dm":5.6,"dm_protein":16.07,"dm_fat":1.79,"dm_cho":73.21,"prot_1000":47.4,"fat_1000":5.3,"cho_1000":215.8,"ca_1000":1.053,"p_1000":1.632,"na_1000":0.1579},{"name":"南瓜","moisture":79.8,"kcal":74.0,"protein":1.9,"fat":0.2,"cho":17.3,"fiber":0.75,"dm":20.2,"dm_protein":9.41,"dm_fat":0.99,"dm_cho":85.64,"prot_1000":25.7,"fat_1000":2.7,"cho_1000":233.8,"ca_1000":0.189,"p_1000":0.622,"na_1000":0.0135},{"name":"菠菜","moisture":93.7,"kcal":18.0,"protein":2.2,"fat":0.3,"cho":2.4,"fiber":2.2,"dm":6.3,"dm_protein":34.92,"dm_fat":4.76,"dm_cho":38.1,"prot_1000":122.2,"fat_1000":16.7,"cho_1000":133.3,"ca_1000":4.5,"p_1000":2.444,"na_1000":2.3889},{"name":"紅蘿蔔","moisture":89.3,"kcal":39.0,"protein":1.1,"fat":0.1,"cho":8.9,"fiber":2.8,"dm":10.7,"dm_protein":10.28,"dm_fat":0.93,"dm_cho":83.18,"prot_1000":28.2,"fat_1000":2.6,"cho_1000":228.2,"ca_1000":0.692,"p_1000":0.744,"na_1000":2.2821},{"name":"花椰菜","moisture":93.0,"kcal":23.0,"protein":1.8,"fat":0.1,"cho":4.5,"fiber":2.0,"dm":7.0,"dm_protein":25.71,"dm_fat":1.43,"dm_cho":64.29,"prot_1000":78.3,"fat_1000":4.3,"cho_1000":195.7,"ca_1000":0.913,"p_1000":1.739,"na_1000":0.6087},{"name":"冬瓜","moisture":96.9,"kcal":11.0,"protein":0.4,"fat":0.1,"cho":2.4,"fiber":0.95,"dm":3.1,"dm_protein":12.9,"dm_fat":3.23,"dm_cho":77.42,"prot_1000":36.4,"fat_1000":9.1,"cho_1000":218.2,"ca_1000":1.0,"p_1000":1.455,"na_1000":0.1818},{"name":"彩椒（黃）","moisture":92.2,"kcal":28.0,"protein":0.8,"fat":0.3,"cho":6.0,"fiber":1.7,"dm":7.8,"dm_protein":10.26,"dm_fat":3.85,"dm_cho":76.92,"prot_1000":28.6,"fat_1000":10.7,"cho_1000":214.3,"ca_1000":0.25,"p_1000":0.714,"na_1000":0.0357},{"name":"白蘿蔔","moisture":95.2,"kcal":18.0,"protein":0.5,"fat":0.1,"cho":3.9,"fiber":1.6,"dm":4.8,"dm_protein":10.42,"dm_fat":2.08,"dm_cho":81.25,"prot_1000":27.8,"fat_1000":5.6,"cho_1000":216.7,"ca_1000":1.333,"p_1000":0.944,"na_1000":2.5556},{"name":"高麗菜","moisture":92.0,"kcal":24.0,"protein":1.4,"fat":0.2,"cho":2.9,"fiber":1.9,"dm":8.0,"dm_protein":17.5,"dm_fat":2.5,"dm_cho":36.25,"prot_1000":58.3,"fat_1000":8.3,"cho_1000":120.8,"ca_1000":2.042,"p_1000":1.333,"na_1000":0.75},{"name":"秋葵","moisture":90.0,"kcal":30.5,"protein":2.1,"fat":0.2,"cho":7.5,"fiber":3.95,"dm":10.0,"dm_protein":21.0,"dm_fat":2.0,"dm_cho":75.0,"prot_1000":68.9,"fat_1000":6.6,"cho_1000":245.9,"ca_1000":3.41,"p_1000":1.902,"na_1000":0.2623},{"name":"番茄","moisture":94.0,"kcal":21.5,"protein":0.9,"fat":0.2,"cho":4.2,"fiber":1.2,"dm":6.0,"dm_protein":15.0,"dm_fat":3.33,"dm_cho":70.0,"prot_1000":41.9,"fat_1000":9.3,"cho_1000":195.3,"ca_1000":0.465,"p_1000":1.116,"na_1000":0.2326},{"name":"青豆仁","moisture":79.0,"kcal":81.0,"protein":5.4,"fat":0.4,"cho":14.5,"fiber":5.1,"dm":21.0,"dm_protein":25.71,"dm_fat":1.9,"dm_cho":69.05,"prot_1000":66.7,"fat_1000":4.9,"cho_1000":179.0,"ca_1000":0.309,"p_1000":1.333,"na_1000":0.0617},{"name":"山藥","moisture":82.0,"kcal":80.0,"protein":2.4,"fat":0.1,"cho":18.0,"fiber":1.15,"dm":18.0,"dm_protein":13.33,"dm_fat":0.56,"dm_cho":100.0,"prot_1000":30.0,"fat_1000":1.2,"cho_1000":225.0,"ca_1000":0.137,"p_1000":0.4,"na_1000":0.0938},{"name":"蓮藕","moisture":82.0,"kcal":69.5,"protein":1.9,"fat":0.25,"cho":15.25,"fiber":3.0,"dm":18.0,"dm_protein":10.56,"dm_fat":1.39,"dm_cho":84.72,"prot_1000":27.3,"fat_1000":3.6,"cho_1000":219.4,"ca_1000":0.388,"p_1000":0.633,"na_1000":0.2806},{"name":"黑木耳","moisture":90.0,"kcal":29.5,"protein":1.7,"fat":0.1,"cho":7.5,"fiber":7.4,"dm":10.0,"dm_protein":17.0,"dm_fat":1.0,"dm_cho":75.0,"prot_1000":57.6,"fat_1000":3.4,"cho_1000":254.2,"ca_1000":1.186,"p_1000":0.407,"na_1000":0.2712},{"name":"枸杞","moisture":4.8,"kcal":347.0,"protein":12.3,"fat":1.3,"cho":77.8,"fiber":11.2,"dm":95.2,"dm_protein":12.92,"dm_fat":1.37,"dm_cho":81.72,"prot_1000":35.4,"fat_1000":3.7,"cho_1000":224.2,"ca_1000":0.144,"p_1000":0.548,"na_1000":1.5014},{"name":"南瓜籽","moisture":5.0,"kcal":559.0,"protein":30.0,"fat":49.0,"cho":11.0,"fiber":6.0,"dm":95.0,"dm_protein":31.58,"dm_fat":51.58,"dm_cho":11.58,"prot_1000":53.7,"fat_1000":87.7,"cho_1000":19.7,"ca_1000":0.098,"p_1000":1.646,"na_1000":0.0322},{"name":"芝麻","moisture":5.0,"kcal":573.0,"protein":18.0,"fat":50.0,"cho":23.0,"fiber":12.0,"dm":95.0,"dm_protein":18.95,"dm_fat":52.63,"dm_cho":24.21,"prot_1000":31.4,"fat_1000":87.3,"cho_1000":40.1,"ca_1000":1.702,"p_1000":1.098,"na_1000":0.0192},{"name":"乾操海帶","moisture":82.5,"kcal":43.0,"protein":1.7,"fat":0.6,"cho":9.6,"fiber":1.3,"dm":17.5,"dm_protein":9.71,"dm_fat":3.43,"dm_cho":54.86,"prot_1000":39.5,"fat_1000":14.0,"cho_1000":223.3,"ca_1000":3.907,"p_1000":0.977,"na_1000":5.4186},{"name":"蘋果","moisture":86.2,"kcal":50.0,"protein":0.3,"fat":0.2,"cho":13.1,"fiber":2.4,"dm":13.8,"dm_protein":2.17,"dm_fat":1.45,"dm_cho":94.93,"prot_1000":6.0,"fat_1000":4.0,"cho_1000":262.0,"ca_1000":0.06,"p_1000":0.2,"na_1000":0.04},{"name":"藍莓","moisture":85.3,"kcal":53.0,"protein":0.5,"fat":0.3,"cho":0.2,"fiber":1.4,"dm":14.7,"dm_protein":3.4,"dm_fat":2.04,"dm_cho":1.36,"prot_1000":9.4,"fat_1000":5.7,"cho_1000":3.8,"ca_1000":0.208,"p_1000":0.245,"na_1000":0.0},{"name":"香蕉","moisture":75.5,"kcal":91.0,"protein":1.25,"fat":0.25,"cho":23.0,"fiber":2.2,"dm":24.5,"dm_protein":5.1,"dm_fat":1.02,"dm_cho":93.88,"prot_1000":13.7,"fat_1000":2.7,"cho_1000":252.7,"ca_1000":0.06,"p_1000":0.275,"na_1000":0.033},{"name":"芭樂","moisture":88.5,"kcal":38.0,"protein":0.85,"fat":0.35,"cho":10.0,"fiber":4.5,"dm":11.5,"dm_protein":7.39,"dm_fat":3.04,"dm_cho":86.96,"prot_1000":22.4,"fat_1000":9.2,"cho_1000":263.2,"ca_1000":0.289,"p_1000":0.711,"na_1000":0.0789},{"name":"雞油","moisture":0.3,"kcal":891.0,"protein":0.0,"fat":99.8,"cho":0.0,"fiber":0.0,"dm":99.7,"dm_protein":0.0,"dm_fat":100.1,"dm_cho":0.0,"prot_1000":0.0,"fat_1000":112.0,"cho_1000":0.0,"ca_1000":0.0,"p_1000":0.0,"na_1000":0.0},{"name":"魚油","moisture":0.0,"kcal":902.0,"protein":0.0,"fat":100.0,"cho":0.0,"fiber":0.0,"dm":100.0,"dm_protein":0.0,"dm_fat":100.0,"dm_cho":0.0,"prot_1000":0.0,"fat_1000":110.9,"cho_1000":0.0,"ca_1000":0.0,"p_1000":0.0,"na_1000":0.0},{"name":"豬油","moisture":0.0,"kcal":902.0,"protein":0.0,"fat":100.0,"cho":0.0,"fiber":0.0,"dm":100.0,"dm_protein":0.0,"dm_fat":100.0,"dm_cho":0.0,"prot_1000":0.0,"fat_1000":110.9,"cho_1000":0.0,"ca_1000":0.0,"p_1000":0.0,"na_1000":0.0},{"name":"亞麻仁油","moisture":0.0,"kcal":884.0,"protein":0.0,"fat":100.0,"cho":0.0,"fiber":0.0,"dm":100.0,"dm_protein":0.0,"dm_fat":100.0,"dm_cho":0.0,"prot_1000":0.0,"fat_1000":113.1,"cho_1000":0.0,"ca_1000":0.0,"p_1000":0.0,"na_1000":0.0},{"name":"菜籽油","moisture":0.0,"kcal":884.0,"protein":0.0,"fat":100.0,"cho":0.0,"fiber":0.0,"dm":100.0,"dm_protein":0.0,"dm_fat":100.0,"dm_cho":0.0,"prot_1000":0.0,"fat_1000":113.1,"cho_1000":0.0,"ca_1000":0.0,"p_1000":0.0,"na_1000":0.0}];
+const CAT_INGREDIENTS = [{"name":"雞（熟）","moisture":65.3,"kcal":165.0,"protein":31.0,"fat":3.57,"cho":0.0,"fiber":0.0,"dm":34.7,"dm_protein":89.34,"dm_fat":10.29,"dm_cho":0.0,"prot_1000":187.9,"fat_1000":21.6,"cho_1000":0.0,"ca_1000":0.091,"p_1000":1.382,"na_1000":0.4485},{"name":"牛（熟）","moisture":73.3,"kcal":116.0,"protein":23.7,"fat":2.41,"cho":0.0,"fiber":0.0,"dm":26.7,"dm_protein":88.76,"dm_fat":9.03,"dm_cho":0.0,"prot_1000":204.3,"fat_1000":20.8,"cho_1000":0.0,"ca_1000":0.112,"p_1000":1.897,"na_1000":0.4741},{"name":"豬（生）","moisture":68.8,"kcal":168.0,"protein":21.1,"fat":9.47,"cho":0.0,"fiber":0.0,"dm":31.2,"dm_protein":67.63,"dm_fat":30.35,"dm_cho":0.0,"prot_1000":125.6,"fat_1000":56.4,"cho_1000":0.0,"ca_1000":0.024,"p_1000":1.173,"na_1000":0.2381},{"name":"羊（熟）","moisture":58.0,"kcal":206.0,"protein":28.0,"fat":9.0,"cho":0.0,"fiber":0.0,"dm":42.0,"dm_protein":66.67,"dm_fat":21.43,"dm_cho":0.0,"prot_1000":135.9,"fat_1000":43.7,"cho_1000":0.0,"ca_1000":0.01,"p_1000":1.068,"na_1000":0.3883},{"name":"鴨（熟）","moisture":64.0,"kcal":201.0,"protein":24.0,"fat":11.0,"cho":0.0,"fiber":0.0,"dm":36.0,"dm_protein":66.67,"dm_fat":30.56,"dm_cho":0.0,"prot_1000":119.4,"fat_1000":54.7,"cho_1000":0.0,"ca_1000":0.065,"p_1000":0.995,"na_1000":0.398},{"name":"鮭魚","moisture":68.0,"kcal":206.0,"protein":22.0,"fat":12.0,"cho":0.0,"fiber":0.0,"dm":32.0,"dm_protein":68.75,"dm_fat":37.5,"dm_cho":0.0,"prot_1000":106.8,"fat_1000":58.3,"cho_1000":0.0,"ca_1000":0.073,"p_1000":1.214,"na_1000":0.2913},{"name":"鮪魚","moisture":70.0,"kcal":128.0,"protein":24.0,"fat":3.0,"cho":0.0,"fiber":0.0,"dm":30.0,"dm_protein":80.0,"dm_fat":10.0,"dm_cho":0.0,"prot_1000":187.5,"fat_1000":23.4,"cho_1000":0.0,"ca_1000":0.102,"p_1000":2.031,"na_1000":0.4688},{"name":"雞心","moisture":71.0,"kcal":190.0,"protein":13.3,"fat":14.8,"cho":0.1,"fiber":0.0,"dm":29.0,"dm_protein":45.86,"dm_fat":51.03,"dm_cho":0.34,"prot_1000":70.0,"fat_1000":77.9,"cho_1000":0.5,"ca_1000":0.021,"p_1000":0.605,"na_1000":0.2632},{"name":"雞肝","moisture":76.5,"kcal":119.0,"protein":16.9,"fat":4.83,"cho":0.73,"fiber":0.0,"dm":23.5,"dm_protein":71.91,"dm_fat":20.55,"dm_cho":3.11,"prot_1000":142.0,"fat_1000":40.6,"cho_1000":6.1,"ca_1000":0.067,"p_1000":2.496,"na_1000":0.5966},{"name":"豬肝","moisture":70.7,"kcal":137.0,"protein":20.8,"fat":5.3,"cho":1.7,"fiber":0.0,"dm":29.3,"dm_protein":70.99,"dm_fat":18.09,"dm_cho":5.8,"prot_1000":151.8,"fat_1000":38.7,"cho_1000":12.4,"ca_1000":0.029,"p_1000":2.394,"na_1000":0.6131},{"name":"小麥","moisture":12.6,"kcal":362.0,"protein":14.1,"fat":2.6,"cho":69.2,"fiber":11.0,"dm":87.4,"dm_protein":16.13,"dm_fat":2.97,"dm_cho":79.18,"prot_1000":39.0,"fat_1000":7.2,"cho_1000":191.2,"ca_1000":0.052,"p_1000":0.666,"na_1000":0.0028},{"name":"薏仁","moisture":11.5,"kcal":378.0,"protein":14.1,"fat":6.1,"cho":66.2,"fiber":9.0,"dm":88.5,"dm_protein":15.93,"dm_fat":6.89,"dm_cho":74.8,"prot_1000":37.3,"fat_1000":16.1,"cho_1000":175.1,"ca_1000":0.05,"p_1000":0.796,"na_1000":0.0053},{"name":"白米","moisture":14.1,"kcal":354.0,"protein":7.0,"fat":0.7,"cho":77.8,"fiber":0.5,"dm":85.9,"dm_protein":8.15,"dm_fat":0.81,"dm_cho":90.57,"prot_1000":19.8,"fat_1000":2.0,"cho_1000":219.8,"ca_1000":0.014,"p_1000":0.229,"na_1000":0.0056},{"name":"蕃薯","moisture":70.0,"kcal":119.0,"protein":1.3,"fat":0.1,"cho":27.5,"fiber":1.5,"dm":30.0,"dm_protein":4.33,"dm_fat":0.33,"dm_cho":91.67,"prot_1000":10.9,"fat_1000":0.8,"cho_1000":231.1,"ca_1000":0.143,"p_1000":0.336,"na_1000":0.6134},{"name":"糙米","moisture":14.8,"kcal":355.0,"protein":7.8,"fat":2.3,"cho":74.0,"fiber":1.7,"dm":85.2,"dm_protein":9.15,"dm_fat":2.7,"dm_cho":86.85,"prot_1000":22.0,"fat_1000":6.5,"cho_1000":208.5,"ca_1000":0.082,"p_1000":0.715,"na_1000":0.0085},{"name":"豆芽","moisture":93.1,"kcal":24.0,"protein":2.3,"fat":0.2,"cho":4.1,"fiber":1.9,"dm":6.9,"dm_protein":33.33,"dm_fat":2.9,"dm_cho":59.42,"prot_1000":95.8,"fat_1000":8.3,"cho_1000":170.8,"ca_1000":2.333,"p_1000":0.958,"na_1000":0.6667},{"name":"苦瓜","moisture":94.4,"kcal":19.0,"protein":0.9,"fat":0.1,"cho":4.1,"fiber":2.3,"dm":5.6,"dm_protein":16.07,"dm_fat":1.79,"dm_cho":73.21,"prot_1000":47.4,"fat_1000":5.3,"cho_1000":215.8,"ca_1000":1.053,"p_1000":1.632,"na_1000":0.1579},{"name":"南瓜","moisture":79.8,"kcal":74.0,"protein":1.9,"fat":0.2,"cho":17.3,"fiber":0.75,"dm":20.2,"dm_protein":9.41,"dm_fat":0.99,"dm_cho":85.64,"prot_1000":25.7,"fat_1000":2.7,"cho_1000":233.8,"ca_1000":0.189,"p_1000":0.622,"na_1000":0.0135},{"name":"菠菜","moisture":93.7,"kcal":18.0,"protein":2.2,"fat":0.3,"cho":2.4,"fiber":2.2,"dm":6.3,"dm_protein":34.92,"dm_fat":4.76,"dm_cho":38.1,"prot_1000":122.2,"fat_1000":16.7,"cho_1000":133.3,"ca_1000":4.5,"p_1000":2.444,"na_1000":2.3889},{"name":"紅蘿蔔","moisture":89.3,"kcal":39.0,"protein":1.1,"fat":0.1,"cho":8.9,"fiber":2.8,"dm":10.7,"dm_protein":10.28,"dm_fat":0.93,"dm_cho":83.18,"prot_1000":28.2,"fat_1000":2.6,"cho_1000":228.2,"ca_1000":0.692,"p_1000":0.744,"na_1000":2.2821},{"name":"花椰菜","moisture":93.0,"kcal":23.0,"protein":1.8,"fat":0.1,"cho":4.5,"fiber":2.0,"dm":7.0,"dm_protein":25.71,"dm_fat":1.43,"dm_cho":64.29,"prot_1000":78.3,"fat_1000":4.3,"cho_1000":195.7,"ca_1000":0.913,"p_1000":1.739,"na_1000":0.6087},{"name":"冬瓜","moisture":96.9,"kcal":11.0,"protein":0.4,"fat":0.1,"cho":2.4,"fiber":0.95,"dm":3.1,"dm_protein":12.9,"dm_fat":3.23,"dm_cho":77.42,"prot_1000":36.4,"fat_1000":9.1,"cho_1000":218.2,"ca_1000":1.0,"p_1000":1.455,"na_1000":0.1818},{"name":"彩椒（黃）","moisture":92.2,"kcal":28.0,"protein":0.8,"fat":0.3,"cho":6.0,"fiber":1.7,"dm":7.8,"dm_protein":10.26,"dm_fat":3.85,"dm_cho":76.92,"prot_1000":28.6,"fat_1000":10.7,"cho_1000":214.3,"ca_1000":0.25,"p_1000":0.714,"na_1000":0.0357},{"name":"白蘿蔔","moisture":95.2,"kcal":18.0,"protein":0.5,"fat":0.1,"cho":3.9,"fiber":1.6,"dm":4.8,"dm_protein":10.42,"dm_fat":2.08,"dm_cho":81.25,"prot_1000":27.8,"fat_1000":5.6,"cho_1000":216.7,"ca_1000":1.333,"p_1000":0.944,"na_1000":2.5556},{"name":"高麗菜","moisture":92.0,"kcal":24.0,"protein":1.4,"fat":0.2,"cho":2.9,"fiber":1.9,"dm":8.0,"dm_protein":17.5,"dm_fat":2.5,"dm_cho":36.25,"prot_1000":58.3,"fat_1000":8.3,"cho_1000":120.8,"ca_1000":2.042,"p_1000":1.333,"na_1000":0.75},{"name":"秋葵","moisture":90.0,"kcal":30.5,"protein":2.1,"fat":0.2,"cho":7.5,"fiber":3.95,"dm":10.0,"dm_protein":21.0,"dm_fat":2.0,"dm_cho":75.0,"prot_1000":68.9,"fat_1000":6.6,"cho_1000":245.9,"ca_1000":3.41,"p_1000":1.902,"na_1000":0.2623},{"name":"番茄","moisture":94.0,"kcal":21.5,"protein":0.9,"fat":0.2,"cho":4.2,"fiber":1.2,"dm":6.0,"dm_protein":15.0,"dm_fat":3.33,"dm_cho":70.0,"prot_1000":41.9,"fat_1000":9.3,"cho_1000":195.3,"ca_1000":0.465,"p_1000":1.116,"na_1000":0.2326},{"name":"青豆仁","moisture":79.0,"kcal":81.0,"protein":5.4,"fat":0.4,"cho":14.5,"fiber":5.1,"dm":21.0,"dm_protein":25.71,"dm_fat":1.9,"dm_cho":69.05,"prot_1000":66.7,"fat_1000":4.9,"cho_1000":179.0,"ca_1000":0.309,"p_1000":1.333,"na_1000":0.0617},{"name":"山藥","moisture":82.0,"kcal":80.0,"protein":2.4,"fat":0.1,"cho":18.0,"fiber":1.15,"dm":18.0,"dm_protein":13.33,"dm_fat":0.56,"dm_cho":100.0,"prot_1000":30.0,"fat_1000":1.2,"cho_1000":225.0,"ca_1000":0.137,"p_1000":0.4,"na_1000":0.0938},{"name":"蓮藕","moisture":82.0,"kcal":69.5,"protein":1.9,"fat":0.25,"cho":15.25,"fiber":3.0,"dm":18.0,"dm_protein":10.56,"dm_fat":1.39,"dm_cho":84.72,"prot_1000":27.3,"fat_1000":3.6,"cho_1000":219.4,"ca_1000":0.388,"p_1000":0.633,"na_1000":0.2806},{"name":"黑木耳","moisture":90.0,"kcal":29.5,"protein":1.7,"fat":0.1,"cho":7.5,"fiber":7.4,"dm":10.0,"dm_protein":17.0,"dm_fat":1.0,"dm_cho":75.0,"prot_1000":57.6,"fat_1000":3.4,"cho_1000":254.2,"ca_1000":1.186,"p_1000":0.407,"na_1000":0.2712},{"name":"枸杞","moisture":4.8,"kcal":347.0,"protein":12.3,"fat":1.3,"cho":77.8,"fiber":11.2,"dm":95.2,"dm_protein":12.92,"dm_fat":1.37,"dm_cho":81.72,"prot_1000":35.4,"fat_1000":3.7,"cho_1000":224.2,"ca_1000":0.144,"p_1000":0.548,"na_1000":1.5014},{"name":"南瓜籽","moisture":5.0,"kcal":559.0,"protein":30.0,"fat":49.0,"cho":11.0,"fiber":6.0,"dm":95.0,"dm_protein":31.58,"dm_fat":51.58,"dm_cho":11.58,"prot_1000":53.7,"fat_1000":87.7,"cho_1000":19.7,"ca_1000":0.098,"p_1000":1.646,"na_1000":0.0322},{"name":"芝麻","moisture":5.0,"kcal":573.0,"protein":18.0,"fat":50.0,"cho":23.0,"fiber":12.0,"dm":95.0,"dm_protein":18.95,"dm_fat":52.63,"dm_cho":24.21,"prot_1000":31.4,"fat_1000":87.3,"cho_1000":40.1,"ca_1000":1.702,"p_1000":1.098,"na_1000":0.0192},{"name":"乾操海帶","moisture":82.5,"kcal":43.0,"protein":1.7,"fat":0.6,"cho":9.6,"fiber":1.3,"dm":17.5,"dm_protein":9.71,"dm_fat":3.43,"dm_cho":54.86,"prot_1000":39.5,"fat_1000":14.0,"cho_1000":223.3,"ca_1000":3.907,"p_1000":0.977,"na_1000":5.4186},{"name":"蘋果","moisture":86.2,"kcal":50.0,"protein":0.3,"fat":0.2,"cho":13.1,"fiber":2.4,"dm":13.8,"dm_protein":2.17,"dm_fat":1.45,"dm_cho":94.93,"prot_1000":6.0,"fat_1000":4.0,"cho_1000":262.0,"ca_1000":0.06,"p_1000":0.2,"na_1000":0.04},{"name":"藍莓","moisture":85.3,"kcal":53.0,"protein":0.5,"fat":0.3,"cho":0.2,"fiber":1.4,"dm":14.7,"dm_protein":3.4,"dm_fat":2.04,"dm_cho":1.36,"prot_1000":9.4,"fat_1000":5.7,"cho_1000":3.8,"ca_1000":0.208,"p_1000":0.245,"na_1000":0.0},{"name":"香蕉","moisture":75.5,"kcal":91.0,"protein":1.25,"fat":0.25,"cho":23.0,"fiber":2.2,"dm":24.5,"dm_protein":5.1,"dm_fat":1.02,"dm_cho":93.88,"prot_1000":13.7,"fat_1000":2.7,"cho_1000":252.7,"ca_1000":0.06,"p_1000":0.275,"na_1000":0.033},{"name":"芭樂","moisture":88.5,"kcal":38.0,"protein":0.85,"fat":0.35,"cho":10.0,"fiber":4.5,"dm":11.5,"dm_protein":7.39,"dm_fat":3.04,"dm_cho":86.96,"prot_1000":22.4,"fat_1000":9.2,"cho_1000":263.2,"ca_1000":0.289,"p_1000":0.711,"na_1000":0.0789},{"name":"雞油","moisture":0.3,"kcal":891.0,"protein":0.0,"fat":99.8,"cho":0.0,"fiber":0.0,"dm":99.7,"dm_protein":0.0,"dm_fat":100.1,"dm_cho":0.0,"prot_1000":0.0,"fat_1000":112.0,"cho_1000":0.0,"ca_1000":0.0,"p_1000":0.0,"na_1000":0.0},{"name":"魚油","moisture":0.0,"kcal":902.0,"protein":0.0,"fat":100.0,"cho":0.0,"fiber":0.0,"dm":100.0,"dm_protein":0.0,"dm_fat":100.0,"dm_cho":0.0,"prot_1000":0.0,"fat_1000":110.9,"cho_1000":0.0,"ca_1000":0.0,"p_1000":0.0,"na_1000":0.0},{"name":"豬油","moisture":0.0,"kcal":902.0,"protein":0.0,"fat":100.0,"cho":0.0,"fiber":0.0,"dm":100.0,"dm_protein":0.0,"dm_fat":100.0,"dm_cho":0.0,"prot_1000":0.0,"fat_1000":110.9,"cho_1000":0.0,"ca_1000":0.0,"p_1000":0.0,"na_1000":0.0},{"name":"亞麻仁油","moisture":0.0,"kcal":884.0,"protein":0.0,"fat":100.0,"cho":0.0,"fiber":0.0,"dm":100.0,"dm_protein":0.0,"dm_fat":100.0,"dm_cho":0.0,"prot_1000":0.0,"fat_1000":113.1,"cho_1000":0.0,"ca_1000":0.0,"p_1000":0.0,"na_1000":0.0},{"name":"菜籽油","moisture":0.0,"kcal":884.0,"protein":0.0,"fat":100.0,"cho":0.0,"fiber":0.0,"dm":100.0,"dm_protein":0.0,"dm_fat":100.0,"dm_cho":0.0,"prot_1000":0.0,"fat_1000":113.1,"cho_1000":0.0,"ca_1000":0.0,"p_1000":0.0,"na_1000":0.0}];
+
+// ── STATIC DATA ───────────────────────────────────────────────────
+const RECIPE_NAME  = { chicken:"雞肉鮮蔬", beef:"牛肉滋補", lamb:"羊肉低敏", fish:"鮮魚護心", duck:"鴨肉關節", pork:"豬肉能量" };
+const HEALTH_LABEL = { ckd:"腎臟病 CKD", cardiac:"心臟病", pancreatitis:"胰臟炎", diabetes:"糖尿病", obesity:"肥胖", arthritis:"關節炎", liver:"肝臟疾病", ibd:"腸胃問題", skin:"皮膚過敏", cancer:"腫瘤" };
+const ALLERGY_LABEL= { chicken:"雞肉", beef:"牛肉", pork:"豬肉", fish:"魚類", egg:"蛋類", dairy:"乳製品", wheat:"小麥", corn:"玉米", soy:"大豆" };
+const ALLERGEN_MAP = { chicken:["chicken"], beef:["beef"], pork:["pork"], fish:["fish"], duck:[], lamb:[] };
+
+// ── BASE RECIPES (150g per pack, AAFCO adult dog verified) ────────
+const BASE_RECIPES = {
+  chicken:[{name:"雞（熟）",g:80},{name:"雞肝",g:10},{name:"地瓜葉",g:18},{name:"花椰菜",g:15},{name:"南瓜",g:15},{name:"紅蘿蔔",g:8},{name:"魚油",g:3},{name:"蛋殼粉",g:0.3},{name:"水",g:0.7}],
+  beef:   [{name:"牛（熟）",g:80},{name:"雞肝",g:10},{name:"菠菜",g:18},{name:"花椰菜",g:12},{name:"蕃薯",g:12},{name:"紅蘿蔔",g:8},{name:"魚油",g:3},{name:"蛋殼粉",g:0.6},{name:"水",g:6.4}],
+  lamb:   [{name:"羊（熟）",g:80},{name:"雞肝",g:8},{name:"地瓜葉",g:18},{name:"南瓜",g:15},{name:"高麗菜",g:15},{name:"蕃薯",g:8},{name:"亞麻仁油",g:3},{name:"蛋殼粉",g:0.3},{name:"水",g:2.7}],
+  fish:   [{name:"鮭魚",g:60},{name:"鮪魚",g:20},{name:"雞肝",g:8},{name:"菠菜",g:18},{name:"花椰菜",g:15},{name:"南瓜",g:12},{name:"魚油",g:2},{name:"蛋殼粉",g:0.7},{name:"水",g:14.3}],
+  duck:   [{name:"鴨（熟）",g:78},{name:"雞肝",g:10},{name:"地瓜葉",g:18},{name:"高麗菜",g:15},{name:"南瓜",g:12},{name:"紅蘿蔔",g:8},{name:"魚油",g:3},{name:"蛋殼粉",g:0.2},{name:"水",g:5.8}],
+  pork:   [{name:"豬（生）",g:78},{name:"豬肝",g:10},{name:"地瓜葉",g:18},{name:"花椰菜",g:15},{name:"蕃薯",g:12},{name:"南瓜",g:8},{name:"魚油",g:3},{name:"蛋殼粉",g:0.2},{name:"水",g:5.8}],
+};
+const COST_PER_KG = {"雞（熟）":350,"牛（熟）":900,"羊（熟）":1100,"鴨（熟）":550,"豬（生）":400,"鮭魚":800,"鮪魚":500,"雞肝":200,"豬肝":250,"地瓜葉":50,"花椰菜":80,"南瓜":60,"紅蘿蔔":50,"菠菜":80,"高麗菜":40,"蕃薯":50,"魚油":800,"亞麻仁油":600,"蛋殼粉":30,"水":0};
+const FIXED_COST = 53; // packaging + labour + freezing + overhead + delivery per pack
+
+// Per-100g nutrition lookup from DOG_INGREDIENTS
+const MG_PER_100G = {"雞（熟）":0.029,"牛（熟）":0.012,"豬（生）":0.022,"羊（熟）":0.025,"鴨（熟）":0.022,"鮭魚":0.03,"鮪魚":0.03,"綠貽貝":0.042,"鵪鶉蛋":0.013,"雞蛋":0.012,"雞心":0.015,"雞肝":0.019,"豬肝":0.018,"小麥":0.137,"薏仁":0.159,"白米":0.02,"蕃薯":0.021,"糙米":0.105,"豆芽":0.014,"芋頭":0.032,"羽衣甘藍":0.033,"地瓜葉":0.07,"青花苗":0.0,"空心菜":0.071,"苦瓜":0.014,"南瓜":0.017,"菠菜":0.062,"紅蘿蔔":0.011,"花椰菜":0.012,"冬瓜":0.005,"彩椒（黃）":0.01,"白蘿蔔":0.002,"高麗菜":0.011,"秋葵":0.054,"番茄":0.011,"青豆仁":0.033,"山藥":0.013,"蓮藕":0.016,"黑木耳":0.015,"枸杞":0.1,"南瓜籽":0.592,"芝麻":0.315,"乾操海帶":0.121,"蘋果":0.003,"藍莓":0.005,"香蕉":0.029,"芭樂":0.014,"雞油":0.0,"魚油":0.0,"豬油":0.0,"亞麻仁油":0.0,"菜籽油":0.0};
+const NUTR_LOOKUP = {};
+DOG_INGREDIENTS.forEach(i => {
+  NUTR_LOOKUP[i.name] = {
+    kcal:    i.kcal/100,
+    protein: i.protein/100,
+    fat:     i.fat/100,
+    cho:     i.cho/100,
+    ca:      i.ca_1000 ? i.kcal/100/1000*i.ca_1000 : 0,
+    p:       i.p_1000  ? i.kcal/100/1000*i.p_1000  : 0,
+    na:      i.na_1000 ? i.kcal/100/1000*i.na_1000 : 0,
+    mg:      (MG_PER_100G[i.name]||0) / 100,
+    moisture:i.moisture/100,
+  };
+});
+// Add eggshell powder manually (not in DOG_INGREDIENTS: Ca=36.2g/100g, no kcal)
+NUTR_LOOKUP["蛋殼粉"] = { kcal:0, protein:0.03755, fat:0.00185, cho:0, ca:0.362, p:0.00106, na:0, mg:0.0006, moisture:0 };
+NUTR_LOOKUP["水"]     = { kcal:0, protein:0, fat:0, cho:0, ca:0, p:0, na:0, mg:0, moisture:1 };
+
+function calcRecipeNutrition(items) {
+  // items: [{name, g}, ...]
+  const t = { kcal:0, protein:0, fat:0, cho:0, ca:0, p:0, na:0, mg:0, weight:0, moisture_g:0 };
+  items.forEach(({name, g}) => {
+    const n = NUTR_LOOKUP[name];
+    if (!n) return;
+    t.kcal      += n.kcal     * g;
+    t.protein   += n.protein  * g;
+    t.fat       += n.fat      * g;
+    t.cho       += n.cho      * g;
+    t.ca        += n.ca       * g;
+    t.p         += n.p        * g;
+    t.na        += (n.na||0)  * g;
+    t.mg        += (n.mg||0)  * g;
+    t.moisture_g+= n.moisture * g;
+    t.weight    += g;
+  });
+  t.h2o_pct    = t.weight > 0 ? t.moisture_g / t.weight * 100 : 0;
+  t.ca_p       = t.p > 0 ? t.ca / t.p : 0;
+  t.prot_1000  = t.kcal > 0 ? t.protein / t.kcal * 1000 : 0;
+  t.fat_1000   = t.kcal > 0 ? t.fat     / t.kcal * 1000 : 0;
+  t.ca_1000    = t.kcal > 0 ? t.ca      / t.kcal * 1000 : 0;
+  t.p_1000     = t.kcal > 0 ? t.p       / t.kcal * 1000 : 0;
+  t.na_100kcal = t.kcal > 0 ? t.na      / t.kcal * 100  : 0;
+  t.mg_1000    = t.kcal > 0 ? t.mg      / t.kcal * 1000 : 0;
+  return t;
+}
+
+function calcCostPerPack(items) {
+  return items.reduce((s, {name, g}) => s + (COST_PER_KG[name]||0) * g / 1000, 0);
+}
+
+// Status config: removed vet_review as separate step — new -> approved -> in_production -> shipped
+const STATUS = {
+  new:           { label:"新訂單",  color:DC.blue,   bg:DC.blueL,   dot:"#2B6CB0", next:"in_production" },
+  in_production: { label:"生產中",  color:DC.earth,  bg:DC.earthL,  dot:"#9A6B3C", next:"shipped" },
+  shipped:       { label:"已出貨",  color:DC.teal,   bg:DC.tealL,   dot:"#2C7A7B", next:null },
+};
+
+// ── MOCK DATA ─────────────────────────────────────────────────────
+const MOCK = [
+  {
+    id:"CF-0041", created_at:"2026-03-26 14:32", status:"new",
+    ship_date:"2026-04-05",
+    pet_profile:{ petName:"Mochi", ownerName:"王小明", ownerPhone:"0912-345-678", ownerEmail:"wang@gmail.com", species:"cat", breed:"布偶貓", sex:"male_neutered", age:3, weight:4.2, idealWeight:4.0, size:"toy", sizeMult:1.1, bcs:"6", activity:"sedentary", actMult:1.2, health:["ckd"], healthNote:"IRIS stage 2，目前服用降磷藥 Epakitin", allergies:["beef"], allergyNote:"", goals:["maintain","gut"], dietNote:"目前餵 Royal Canin 腎臟處方乾糧", treatFreq:"occasional", delivery:"biweekly", address:"台北市大安區忠孝東路四段 100 號 3F" },
+    nutrition_data:null, assigned_recipe:"fish", vet_approved:false, vet_notes:"", plan_price:6500,
+    owner_notes:"飼主表示 Mochi 食慾不穩定，建議先少量試吃",
+    past_orders:[],
+  },
+  {
+    id:"CF-0040", created_at:"2026-03-26 11:15", status:"new",
+    ship_date:"2026-04-05",
+    pet_profile:{ petName:"奶油", ownerName:"林小華", ownerPhone:"0923-456-789", ownerEmail:"lin@gmail.com", species:"dog", breed:"柴犬", sex:"female_spayed", age:7.5, weight:9.8, idealWeight:9.0, size:"medium", sizeMult:1.0, bcs:"7", activity:"low", actMult:1.4, health:["arthritis","obesity"], healthNote:"後腿關節退化，X光確認 grade 2", allergies:["chicken"], allergyNote:"", goals:["lose","joint"], dietNote:"目前混餵乾糧加自製鮮食", treatFreq:"daily_moderate", delivery:"weekly", address:"台北市信義區松仁路 200 號 12F" },
+    nutrition_data:null, assigned_recipe:"duck", vet_approved:false, vet_notes:"請確認 EPA/DHA 劑量", plan_price:5800,
+    owner_notes:"",
+    past_orders:[
+      { id:"CF-0031", date:"2026-02-10", recipe:"duck", status:"shipped", notes:"第一次訂購，飼主反饋適口性良好" },
+    ],
+  },
+  {
+    id:"CF-0039", created_at:"2026-03-25 16:50", status:"in_production",
+    ship_date:"2026-04-04",
+    pet_profile:{ petName:"小橘", ownerName:"陳大衛", ownerPhone:"0934-567-890", ownerEmail:"chen@gmail.com", species:"cat", breed:"米克斯", sex:"male_intact", age:1.5, weight:3.8, idealWeight:3.8, size:"toy", sizeMult:1.1, bcs:"5", activity:"moderate", actMult:1.6, health:["skin"], healthNote:"疑似食物過敏", allergies:["chicken","beef","pork"], allergyNote:"", goals:["skin"], dietNote:"之前試過多個品牌都有過敏", treatFreq:"none", delivery:"biweekly", address:"台北市中山區南京東路二段 55 號 5F" },
+    nutrition_data:{ rer:192, mer:338, adjustments:[{label:"蛋白質來源",value:"新型蛋白質（羊/鴨）",flag:"info"},{label:"Omega-3",value:"加強補充 EPA/DHA",flag:"info"}] },
+    assigned_recipe:"lamb", vet_approved:true, vet_notes:"確認羊肉低敏配方，補充 Omega-3", plan_price:5800,
+    owner_notes:"過敏症狀在前次訂購後改善明顯，本次繼續同配方",
+    past_orders:[
+      { id:"CF-0028", date:"2026-02-01", recipe:"lamb", status:"shipped", notes:"皮膚過敏改善中，繼續觀察" },
+      { id:"CF-0015", date:"2026-01-05", recipe:"lamb", status:"shipped", notes:"第一次嘗試羊肉配方，初期適口性普通" },
+    ],
+  },
+  {
+    id:"CF-0038", created_at:"2026-03-25 09:20", status:"in_production",
+    ship_date:"2026-04-04",
+    pet_profile:{ petName:"花花", ownerName:"吳美麗", ownerPhone:"0945-678-901", ownerEmail:"wu@gmail.com", species:"dog", breed:"貴賓犬", sex:"female_spayed", age:10, weight:5.5, idealWeight:5.5, size:"toy", sizeMult:1.1, bcs:"5", activity:"low", actMult:1.4, health:["cardiac"], healthNote:"確診擴張性心肌病（DCM）", allergies:["none"], allergyNote:"", goals:["senior"], dietNote:"目前只吃罐頭，食慾不太好", treatFreq:"occasional", delivery:"weekly", address:"台北市松山區民生東路三段 88 號" },
+    nutrition_data:{ rer:204, mer:314, adjustments:[{label:"鈉含量",value:"50–80mg/100kcal",flag:"warning"},{label:"牛磺酸",value:"800mg/天",flag:"warning"},{label:"左旋肉鹼",value:"50mg/kg/天",flag:"info"}] },
+    assigned_recipe:"fish", vet_approved:true, vet_notes:"鈉嚴格控制，牛磺酸 800mg/天", plan_price:5500,
+    owner_notes:"花花食慾較差，建議每日分 3 次餵食",
+    past_orders:[
+      { id:"CF-0033", date:"2026-02-25", recipe:"fish", status:"shipped", notes:"心臟配方第二批，血檢指標穩定" },
+      { id:"CF-0020", date:"2026-01-20", recipe:"fish", status:"shipped", notes:"心臟病確診後首次訂製，飼主配合度高" },
+    ],
+  },
+  {
+    id:"CF-0037", created_at:"2026-03-24 14:00", status:"shipped",
+    ship_date:"2026-04-03",
+    pet_profile:{ petName:"豆豆", ownerName:"張建國", ownerPhone:"0956-789-012", ownerEmail:"zhang@gmail.com", species:"dog", breed:"黃金獵犬", sex:"male_neutered", age:4, weight:28, idealWeight:28, size:"large", sizeMult:0.9, bcs:"5", activity:"active", actMult:2.0, health:["none"], healthNote:"", allergies:["none"], allergyNote:"", goals:["maintain"], dietNote:"目前餵乾糧", treatFreq:"daily_moderate", delivery:"biweekly", address:"台北市北投區中央南路二段 10 號" },
+    nutrition_data:{ rer:501, mer:902, adjustments:[] },
+    assigned_recipe:"beef", vet_approved:true, vet_notes:"標準成年活力犬配方", plan_price:5500,
+    owner_notes:"",
+    past_orders:[
+      { id:"CF-0029", date:"2026-02-15", recipe:"beef", status:"shipped", notes:"標準配方，飼主滿意度高" },
+      { id:"CF-0018", date:"2026-01-10", recipe:"chicken", status:"shipped", notes:"首次訂購，後改為牛肉配方" },
+    ],
+  },
+];
+
+// ── NUTRITION CALCULATOR ──────────────────────────────────────────
+function calcNutrition(p) {
+  const w   = parseFloat(p.idealWeight || p.weight || 5);
+  const rer = Math.round(70 * Math.pow(w, 0.75));
+  const isNeutered = p.sex === "male_neutered" || p.sex === "female_spayed";
+  // Multipliers from Excel Requirement Calculator sheet
+  let stageMult = isNeutered ? 1.6 : 1.8;
+  if (p.age < 4/12) stageMult = 3.0;
+  else if (p.age < 1) stageMult = 2.0;
+  else if (p.age >= 7) stageMult = 1.3;
+  const mer = Math.round(rer * stageMult * (p.actMult || 1.6) * (p.sizeMult || 1.0));
+
+  // Estimated daily nutrient targets (Atwater coefficients + AAFCO guidelines)
+  const protein = Math.round(mer * 0.25 / 4);
+  const fat     = Math.round(mer * 0.30 / 9);
+  const cho     = Math.round(mer * 0.35 / 4);
+  const water   = Math.round(w * 50);
+
+  // Health condition adjustments from Excel Requirement Calculator
+  const adj = [];
+  const h = p.health || [];
+  if (h.includes("ckd")) {
+    adj.push({ label:"磷含量",   value:"< 1.5 g / 1,000 kcal",         flag:"warning" });
+    adj.push({ label:"蛋白質",   value:"25–55 g / 1,000 kcal（降低 25–50%）", flag:"warning" });
+    adj.push({ label:"含水量",   value:"≥ 70%",                         flag:"info" });
+  }
+  if (h.includes("cardiac")) {
+    adj.push({ label:"鈉含量",   value:"50–80 mg / 100 kcal",           flag:"warning" });
+    adj.push({ label:"牛磺酸",   value:"500–1,000 mg / 天",             flag:"warning" });
+    adj.push({ label:"左旋肉鹼", value:"50 mg / kg / 天",               flag:"info" });
+    adj.push({ label:"Omega-3",  value:"115 mg EPA+DHA / kg / 天",      flag:"info" });
+  }
+  if (h.includes("pancreatitis")) {
+    adj.push({ label:"脂肪（高血脂）",  value:"< 20 g / 1,000 kcal",   flag:"warning" });
+    adj.push({ label:"脂肪（無高血脂）",value:"< 35 g / 1,000 kcal",   flag:"warning" });
+    adj.push({ label:"蛋白質",          value:"< 75 g / 1,000 kcal",   flag:"info" });
+    adj.push({ label:"餵食方式",        value:"每日 4–6 小份",          flag:"info" });
+  }
+  if (h.includes("arthritis")) {
+    adj.push({ label:"Omega-3 EPA+DHA", value:"1–3 mg / kcal",         flag:"info" });
+    adj.push({ label:"葡萄糖胺",        value:"500–1,000 mg / 天",      flag:"info" });
+    adj.push({ label:"軟骨素",          value:"400–800 mg / 天",        flag:"info" });
+  }
+  if (h.includes("obesity")) {
+    adj.push({ label:"熱量目標", value:`${Math.round(rer*1.0)} kcal（1.0× RER 理想體重）`, flag:"warning" });
+    adj.push({ label:"减重速度", value:"1% 體重 / 週",                  flag:"info" });
+  }
+  if (h.includes("diabetes")) {
+    adj.push({ label:"碳水化合物", value:"< 15% DM",                    flag:"warning" });
+    adj.push({ label:"蛋白質",     value:"> 45% DM",                    flag:"info" });
+  }
+  if (h.includes("liver")) {
+    adj.push({ label:"銅",   value:"< 1.2 mg / 1,000 kcal",            flag:"warning" });
+    adj.push({ label:"鋅",   value:"> 50 mg / 1,000 kcal",             flag:"info" });
+    adj.push({ label:"蛋白質（無肝性腦病）", value:"≥ 45 g / 1,000 kcal", flag:"info" });
+  }
+  if (h.includes("skin")) {
+    adj.push({ label:"蛋白質來源", value:"新型蛋白質（羊/鴨）",         flag:"info" });
+    adj.push({ label:"Omega-3",    value:"加強補充 EPA/DHA",            flag:"info" });
+  }
+  return { rer, mer, protein, fat, cho, water, stageMult, adj };
+}
+
+// ── SPECIES BADGE ────────────────────────────────────────────────
+const SpeciesBadge = ({ species, size }) => {
+  const isDog = species === "dog";
+  const big = size === "lg";
+  return (
+    <span style={{
+      display:"inline-flex", alignItems:"center", gap:4,
+      padding: big ? "5px 14px" : "2px 10px",
+      borderRadius:50, fontSize: big ? 13 : 11, fontWeight:700,
+      background: isDog ? DC.dogBg : DC.catBg,
+      color:       isDog ? DC.dogText : DC.catText,
+      border: isDog ? "1.5px solid " + DC.dogBorder : "1.5px solid " + DC.catBorder,
+    }}>
+      <span style={{ width: big?10:8, height: big?10:8, borderRadius:"50%", background: isDog ? DC.dogBorder : DC.catBorder, flexShrink:0 }}/>
+      {isDog ? "DOG" : "CAT"}
+    </span>
+  );
+};
+
+const StatusBadge = ({ status }) => {
+  const s = STATUS[status] || STATUS.new;
+  return (
+    <span style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"3px 12px", borderRadius:50, fontSize:11, fontWeight:600, background:s.bg, color:s.color, border:`1px solid ${s.color}40` }}>
+      <span style={{ width:6, height:6, borderRadius:"50%", background:s.dot }}/>
+      {s.label}
+    </span>
+  );
+};
+const Tag = ({ label, color, bg }) => (
+  <span style={{ display:"inline-block", padding:"2px 9px", borderRadius:50, fontSize:11, fontWeight:500, background:bg, color, border:`1px solid ${color}30`, margin:"2px 3px" }}>{label}</span>
+);
+const NRow = ({ label, value, flag, last }) => (
+  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"7px 0", borderBottom: last ? "none" : `1px solid ${DC.border}` }}>
+    <span style={{ fontSize:12, color:DC.mid }}>{label}</span>
+    <span style={{ fontSize:12, fontWeight:600, color: flag==="warning"?DC.earth : flag==="info"?DC.blue : DC.sage }}>{value}</span>
+  </div>
+);
+
+// ── DRY MATTER CALCULATOR ─────────────────────────────────────────
+function DryMatterCalc({ species, recipeId, grams, setGrams }) {
+  const ingredients = species === "dog" ? DOG_INGREDIENTS : CAT_INGREDIENTS;
+  // Use shared grams state; fall back to internal state if not provided (standalone use)
+  const baseItems = recipeId ? (BASE_RECIPES[recipeId] || BASE_RECIPES.chicken) : [];
+  const [localSelected, setLocalSelected] = useState(baseItems.map(i=>({...ingredients.find(x=>x.name===i.name)||{name:i.name,kcal:0,protein:0,fat:0,cho:0,moisture:0,ca_1000:0,p_1000:0,na_1000:0}})));
+  const [searchQ, setSearchQ] = useState("");
+
+  // Selected ingredients = recipe ingredients
+  const selected = baseItems.map(({name}) => {
+    const ing = ingredients.find(x=>x.name===name) || DOG_INGREDIENTS.find(x=>x.name===name) || {name,kcal:0,protein:0,fat:0,cho:0,moisture:0,ca_1000:0,p_1000:0,na_1000:0};
+    return ing;
+  }).filter(i=>i.kcal>0||i.name==="蛋殼粉"||i.name==="水");
+
+  const addIngredient = (ing) => {
+    if (!baseItems.find(b=>b.name===ing.name)) {
+      // Add new ingredient to grams
+      setGrams(prev=>({...prev,[ing.name]:100}));
+      // Also add to baseItems workaround — just update grams
+    }
+  };
+
+  const filteredList = ingredients.filter(i=>
+    (!searchQ || i.name.includes(searchQ)) && !baseItems.find(b=>b.name===i.name)
+  );
+
+  // Calculate totals from shared grams state
+  const allItems = [
+    ...baseItems.map(({name})=>({name,g:parseFloat(grams[name])||0})),
+  ];
+  const totals = allItems.reduce((acc,{name,g})=>{
+    const n = NUTR_LOOKUP[name];
+    if (!n) return acc;
+    return {
+      weight:   acc.weight   + g,
+      kcal:     acc.kcal     + n.kcal*g,
+      protein:  acc.protein  + n.protein*g,
+      fat:      acc.fat      + n.fat*g,
+      cho:      acc.cho      + n.cho*g,
+      ca:       acc.ca       + n.ca*g,
+      p:        acc.p        + n.p*g,
+      na:       acc.na       + (n.na||0)*g,
+      mg:       acc.mg       + (n.mg||0)*g,
+      moist:    acc.moist    + n.moisture*g,
+    };
+  }, {weight:0,kcal:0,protein:0,fat:0,cho:0,ca:0,p:0,na:0,mg:0,moist:0});
+
+  const dm_pct = totals.weight > 0 ? (totals.weight - totals.moist) / totals.weight * 100 : 0;
+  const dm = dm_pct / 100;
+  const dm_protein = dm > 0 && totals.weight > 0 ? (totals.protein/totals.weight*100)/dm_pct*100 : 0;
+  const dm_fat     = dm > 0 && totals.weight > 0 ? (totals.fat/totals.weight*100)/dm_pct*100 : 0;
+  const dm_cho     = dm > 0 && totals.weight > 0 ? (totals.cho/totals.weight*100)/dm_pct*100 : 0;
+  const prot_1000  = totals.kcal > 0 ? totals.protein/totals.kcal*1000 : 0;
+  const fat_1000   = totals.kcal > 0 ? totals.fat/totals.kcal*1000    : 0;
+  const cho_1000   = totals.kcal > 0 ? totals.cho/totals.kcal*1000    : 0;
+  const ca_1000    = totals.kcal > 0 ? totals.ca/totals.kcal*1000     : 0;
+  const p_1000     = totals.kcal > 0 ? totals.p/totals.kcal*1000      : 0;
+  const na_1000    = totals.kcal > 0 ? totals.na/totals.kcal*1000     : 0;
+  const mg_1000    = totals.kcal > 0 ? totals.mg/totals.kcal*1000     : 0;
+  const ca_p       = totals.p > 0 ? totals.ca/totals.p : 0;
+
+  const inp = { padding:"5px 8px", border:`1px solid ${DC.border}`, borderRadius:6, fontSize:12, color:DC.dark, background:"white", outline:"none", textAlign:"right", fontFamily:"inherit" };
+
+  return (
+    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:20 }}>
+      {/* LEFT: ingredient table */}
+      <div>
+        <div style={{ fontSize:12, fontWeight:600, color:DC.dark, marginBottom:10 }}>配方食材（克數同步配方調整 Tab）</div>
+        <div style={{ background:DC.surface2, borderRadius:10, overflow:"hidden", border:`1px solid ${DC.border}` }}>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 72px", padding:"7px 12px", background:DC.surface2, borderBottom:`1px solid ${DC.border}`, fontSize:11, fontWeight:600, color:DC.lighter, textTransform:"uppercase" }}>
+            <span>食材</span><span style={{textAlign:"right"}}>克數</span>
+          </div>
+          {baseItems.map(({name})=>(
+            <div key={name} style={{ display:"grid", gridTemplateColumns:"1fr 72px", padding:"8px 12px", borderBottom:`1px solid ${DC.border}`, alignItems:"center", background:"white" }}>
+              <span style={{ fontSize:13, color:DC.dark }}>{name}</span>
+              <div style={{ display:"flex", alignItems:"center", gap:4, justifyContent:"flex-end" }}>
+                <input type="number" min="0" max="300" step="0.1"
+                  value={grams[name]??0}
+                  onChange={e=>setGrams(prev=>({...prev,[name]:e.target.value}))}
+                  style={{...inp, width:52}}
+                  onFocus={e=>{e.target.style.borderColor=DC.sage;}}
+                  onBlur={e=>{e.target.style.borderColor=DC.border;}}
+                />
+                <span style={{fontSize:11,color:DC.lighter}}>g</span>
+              </div>
+            </div>
+          ))}
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 72px", padding:"9px 12px", background:DC.sageL, borderTop:`1px solid ${DC.sage}30` }}>
+            <span style={{ fontSize:12, fontWeight:600, color:DC.sage }}>總重量</span>
+            <span style={{ fontSize:12, fontWeight:700, color:DC.sage, textAlign:"right", paddingRight:18 }}>{totals.weight.toFixed(1)}g</span>
+          </div>
+        </div>
+      </div>
+
+      {/* RIGHT: results */}
+      <div>
+        <div style={{ fontSize:12, fontWeight:600, color:DC.dark, marginBottom:10 }}>計算結果</div>
+        {totals.weight === 0 ? (
+          <div style={{ background:DC.surface2, borderRadius:10, padding:"32px", textAlign:"center", color:DC.lighter }}>克數全為 0</div>
+        ) : (
+          <div>
+            <div style={{ background:DC.surface2, borderRadius:10, padding:"12px 14px", marginBottom:10 }}>
+              <div style={{ fontSize:11, fontWeight:700, color:DC.mid, letterSpacing:".8px", textTransform:"uppercase", marginBottom:8 }}>現食基礎（As-Fed）</div>
+              <NRow label="總熱量"   value={`${totals.kcal.toFixed(0)} kcal`} />
+              <NRow label="水分"     value={`${(totals.moist/totals.weight*100).toFixed(1)} %`} />
+              <NRow label="蛋白質"   value={`${totals.protein.toFixed(1)} g`} />
+              <NRow label="脂肪"     value={`${totals.fat.toFixed(1)} g`} />
+              <NRow label="碳水化合物" value={`${totals.cho.toFixed(1)} g`} />
+              <NRow label="鈣 (Ca)" value={`${(totals.ca*1000).toFixed(0)} mg`} />
+              <NRow label="磷 (P)"  value={`${(totals.p*1000).toFixed(0)} mg`} />
+              <NRow label="鈉 (Na)" value={`${(totals.na*1000).toFixed(0)} mg`} />
+              <NRow label="鎂 (Mg)" value={`${(totals.mg*1000).toFixed(0)} mg`} last />
+            </div>
+            <div style={{ background:DC.sageL, border:`1px solid ${DC.sageMid}40`, borderRadius:10, padding:"12px 14px", marginBottom:10 }}>
+              <div style={{ fontSize:11, fontWeight:700, color:DC.sageD, letterSpacing:".8px", textTransform:"uppercase", marginBottom:8 }}>乾物基礎（DM%: {dm_pct.toFixed(1)}%）</div>
+              <NRow label="蛋白質 DM%" value={`${dm_protein.toFixed(1)} %`} flag="info" />
+              <NRow label="脂肪 DM%"   value={`${dm_fat.toFixed(1)} %`}     flag="info" />
+              <NRow label="碳水 DM%"   value={`${dm_cho.toFixed(1)} %`}     flag="info" last />
+            </div>
+            <div style={{ background:DC.goldL, border:`1px solid ${DC.gold}40`, borderRadius:10, padding:"12px 14px" }}>
+              <div style={{ fontSize:11, fontWeight:700, color:DC.gold, letterSpacing:".8px", textTransform:"uppercase", marginBottom:8 }}>代謝能基礎（Per 1,000 kcal ME）</div>
+              <NRow label="蛋白質"   value={`${prot_1000.toFixed(1)} g`} />
+              <NRow label="脂肪"     value={`${fat_1000.toFixed(1)} g`} />
+              <NRow label="碳水化合物" value={`${cho_1000.toFixed(1)} g`} />
+              <NRow label="鈣 (Ca)" value={`${ca_1000.toFixed(3)} g`} />
+              <NRow label="磷 (P)"  value={`${p_1000.toFixed(3)} g`} />
+              <NRow label="鈉 (Na)" value={`${na_1000.toFixed(3)} g`} />
+              <NRow label="鎂 (Mg)" value={`${mg_1000.toFixed(3)} g`} />
+              <NRow label="Ca:P 比例" value={`${ca_p.toFixed(2)}:1`} flag={ca_p>=1.0&&ca_p<=1.3?"info":"warning"} last />
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
+// ── FORMULA ADJUSTMENT TAB ───────────────────────────────────────
+function FormulaTab({ order, p, nut, recipe, grams, setGrams, onSave, onClose, saving, setSaving }) {
+  const recipeId  = recipe || order.assigned_recipe || "chicken";
+  const baseItems = BASE_RECIPES[recipeId] || BASE_RECIPES.chicken;
+  const adjItems  = baseItems.map(({name}) => ({ name, g: parseFloat(grams[name])||0 }));
+  const baseNutr  = calcRecipeNutrition(baseItems);
+  const adjNutr   = calcRecipeNutrition(adjItems);
+  const baseCost  = calcCostPerPack(baseItems) + FIXED_COST;
+  const adjCost   = calcCostPerPack(adjItems)  + FIXED_COST;
+
+  const packsPerDay   = adjNutr.kcal > 0 ? nut.mer / adjNutr.kcal : 0;
+  const packsPerMonth = Math.ceil(packsPerDay * 31);
+  const packsBase     = baseNutr.kcal > 0 ? nut.mer / baseNutr.kcal : 0;
+
+  const setG = (name, val) => setGrams(prev => ({...prev, [name]: val}));
+
+  const healthActive = (p.health||[]).filter(h=>h!=="none");
+  const suggestions = [];
+  if (healthActive.includes("ckd"))          { suggestions.push({color:DC.earth,text:"CKD：建議將主蛋白質降至 60–65g，增加水量至 20g 以上（目標含水量 ≥75%）"}); suggestions.push({color:DC.earth,text:"CKD：磷含量目標 <1.5g/1000kcal，可減少雞肝用量（雞肝磷含量較高）"}); }
+  if (healthActive.includes("pancreatitis")) { suggestions.push({color:DC.red,  text:"胰臟炎：移除或大幅減少魚油（降至 1g 以下），整體脂肪目標 <20g/1000kcal"}); }
+  if (healthActive.includes("cardiac"))      { suggestions.push({color:DC.earth,text:"心臟病：嚴格控制鈉含量，增加魚油至 4–5g 以提升 Omega-3"}); }
+  if (healthActive.includes("obesity"))      { suggestions.push({color:DC.blue, text:"肥胖：以理想體重計算 MER，整體份量減少約 20–25%，配方比例不變"}); }
+  if (healthActive.includes("arthritis"))    { suggestions.push({color:DC.blue, text:"關節炎：增加魚油至 5g，鴨肉配方已內建較高 Omega-3"}); }
+  if (healthActive.includes("diabetes"))     { suggestions.push({color:DC.earth,text:"糖尿病：減少蕃薯等澱粉類，增加蔬菜比例，目標碳水 <15% DM"}); }
+  if (healthActive.includes("liver"))        { suggestions.push({color:DC.red,  text:"肝臟疾病：避免使用豬肝，以雞肝替代；嚴格控制銅含量"}); }
+
+  const flags = [];
+  if (adjNutr.prot_1000 < 45)               flags.push({text:`蛋白質偏低 ${adjNutr.prot_1000.toFixed(0)}g/1000kcal（最低 45g）`,  color:DC.red});
+  if (adjNutr.fat_1000  < 13.8)             flags.push({text:`脂肪偏低 ${adjNutr.fat_1000.toFixed(0)}g/1000kcal（最低 13.8g）`,    color:DC.red});
+  if (adjNutr.ca_p < 1.0)                   flags.push({text:`Ca:P 偏低 ${adjNutr.ca_p.toFixed(2)}（建議 1.0–1.3）`,               color:DC.red});
+  if (adjNutr.ca_p > 1.3)                   flags.push({text:`Ca:P 偏高 ${adjNutr.ca_p.toFixed(2)}（建議 1.0–1.3）`,               color:DC.earth});
+  if (adjNutr.h2o_pct < 60)                 flags.push({text:`含水量偏低 ${adjNutr.h2o_pct.toFixed(0)}%（建議 ≥65%）`,              color:DC.earth});
+
+  const inp = { padding:"5px 8px", border:`1px solid ${DC.border}`, borderRadius:6, fontSize:13, color:DC.dark, background:"white", outline:"none", textAlign:"right", fontFamily:"inherit" };
+
+  // 4. Send to production button from this tab
+  const handleSendToProduction = async () => {
+    if (!recipe) { alert("請先在審核 ＆ 備註 Tab 指派食譜"); return; }
+    setSaving(true);
+    await onSave(order.id, {
+      status:"in_production",
+      assigned_recipe:recipe,
+      vet_approved:true,
+      nutrition_data:{ rer:nut.rer, mer:nut.mer, adjustments:nut.adj, adjusted_grams:grams },
+    });
+    setSaving(false);
+    onClose();
+  };
+
+  return (
+    <div>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:16 }}>
+        <div>
+          <div style={{ fontSize:14, fontWeight:600, color:DC.dark, marginBottom:3 }}>
+            {RECIPE_NAME[recipeId]||"雞肉鮮蔬"} — 配方調整
+          </div>
+          <div style={{ fontSize:12, color:DC.mid }}>每包 150g ∙ 基礎配方自動載入 ∙ 修改克數即時更新 ∙ 切換 Tab 資料保持不變</div>
+        </div>
+        <div style={{ display:"flex", gap:8 }}>
+          <button onClick={()=>setGrams(()=>{const m={};baseItems.forEach(({name,g})=>{m[name]=g;});return m;})}
+            style={{ padding:"6px 14px", background:DC.surface2, border:`1px solid ${DC.border}`, borderRadius:50, fontSize:12, color:DC.mid, cursor:"pointer", fontFamily:"inherit" }}>
+            重設
+          </button>
+          {order.status==="new"&&(
+            <button onClick={handleSendToProduction} disabled={saving}
+              style={{ padding:"6px 16px", background:DC.sage, color:"white", border:"none", borderRadius:50, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>
+              {saving?"處理中…":"核准並送生產"}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {suggestions.length > 0 && (
+        <div style={{ background:DC.earthL, border:`1px solid ${DC.earth}30`, borderRadius:10, padding:"12px 16px", marginBottom:14 }}>
+          <div style={{ fontSize:12, fontWeight:600, color:DC.earth, marginBottom:8 }}>建議調整方向（依健康狀況）</div>
+          {suggestions.map((s,i)=>(
+            <div key={i} style={{ display:"flex", gap:8, fontSize:12, color:s.color, marginBottom:i<suggestions.length-1?5:0, lineHeight:1.5 }}>
+              <span style={{flexShrink:0}}>→</span>{s.text}
+            </div>
+          ))}
+        </div>
+      )}
+      {flags.length > 0 && (
+        <div style={{ background:DC.redL, border:`1px solid ${DC.red}30`, borderRadius:10, padding:"10px 16px", marginBottom:14 }}>
+          <div style={{ fontSize:12, fontWeight:600, color:DC.red, marginBottom:6 }}>AAFCO 警告</div>
+          {flags.map((f,i)=><div key={i} style={{ fontSize:12, color:f.color, marginBottom:i<flags.length-1?3:0 }}>⚠ {f.text}</div>)}
+        </div>
+      )}
+
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:20 }}>
+        {/* LEFT: ingredient editor */}
+        <div>
+          <div style={{ fontSize:12, fontWeight:600, color:DC.dark, marginBottom:10 }}>食材克數調整</div>
+          <div style={{ background:DC.surface2, borderRadius:10, overflow:"hidden", border:`1px solid ${DC.border}` }}>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 70px 70px", gap:0, padding:"7px 14px", background:DC.surface2, borderBottom:`1px solid ${DC.border}`, fontSize:11, fontWeight:600, color:DC.lighter, textTransform:"uppercase", letterSpacing:".5px" }}>
+              <span>食材</span><span style={{textAlign:"right"}}>基礎</span><span style={{textAlign:"right"}}>調整後</span>
+            </div>
+            {baseItems.map(({name,g:baseG})=>{
+              const adjG = parseFloat(grams[name])||0;
+              const changed = Math.abs(adjG - baseG) > 0.05;
+              return (
+                <div key={name} style={{ display:"grid", gridTemplateColumns:"1fr 70px 70px", gap:0, padding:"8px 14px", borderBottom:`1px solid ${DC.border}`, alignItems:"center", background:changed?"#F0FBF2":"white" }}>
+                  <span style={{ fontSize:13, color:changed?DC.sage:DC.dark, fontWeight:changed?600:400 }}>{name}</span>
+                  <span style={{ fontSize:12, color:DC.lighter, textAlign:"right", paddingRight:8 }}>{baseG}g</span>
+                  <div style={{ display:"flex", alignItems:"center", gap:3, justifyContent:"flex-end" }}>
+                    <input type="number" min="0" max="300" step="0.1"
+                      value={grams[name]??baseG}
+                      onChange={e=>setG(name,e.target.value)}
+                      style={{...inp, width:52}}
+                      onFocus={e=>{e.target.style.borderColor=DC.sage;e.target.style.background="#F5FDF6";}}
+                      onBlur={e=>{e.target.style.borderColor=DC.border;e.target.style.background="white";}}
+                    />
+                    <span style={{ fontSize:11, color:DC.lighter }}>g</span>
+                  </div>
+                </div>
+              );
+            })}
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 70px 70px", gap:0, padding:"9px 14px", background:DC.sageL, borderTop:`1px solid ${DC.sage}30` }}>
+              <span style={{ fontSize:12, fontWeight:600, color:DC.sage }}>總重量</span>
+              <span style={{ fontSize:12, color:DC.lighter, textAlign:"right", paddingRight:8 }}>{baseItems.reduce((s,i)=>s+i.g,0).toFixed(0)}g</span>
+              <span style={{ fontSize:12, fontWeight:700, color:DC.sage, textAlign:"right", paddingRight:18 }}>{adjItems.reduce((s,i)=>s+i.g,0).toFixed(1)}g</span>
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT: live comparison */}
+        <div>
+          <div style={{ fontSize:12, fontWeight:600, color:DC.dark, marginBottom:10 }}>即時營養比對</div>
+          <div style={{ background:DC.surface2, borderRadius:10, padding:"13px 14px", marginBottom:10 }}>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:10 }}>
+              {[
+                {label:"每包熱量", base:`${baseNutr.kcal.toFixed(0)} kcal`, adj:`${adjNutr.kcal.toFixed(0)} kcal`, changed:Math.abs(adjNutr.kcal-baseNutr.kcal)>1},
+                {label:"每日包數", base:`${packsBase.toFixed(1)} 包`,        adj:`${packsPerDay.toFixed(1)} 包`,    changed:Math.abs(packsPerDay-packsBase)>0.05},
+                {label:"每月包數", base:`${Math.ceil(packsBase*31)} 包`,     adj:`${packsPerMonth} 包`,             changed:Math.ceil(packsBase*31)!==packsPerMonth},
+                {label:"總成本",   base:`NT$${baseCost.toFixed(0)}`,         adj:`NT$${adjCost.toFixed(0)}`,        changed:Math.abs(adjCost-baseCost)>0.5},
+              ].map(r=>(
+                <div key={r.label} style={{ background:"white", borderRadius:8, padding:"9px 11px" }}>
+                  <div style={{ fontSize:10, color:DC.lighter, marginBottom:2 }}>{r.label}</div>
+                  <div style={{ fontSize:10, color:DC.lighter, marginBottom:2 }}>基礎：{r.base}</div>
+                  <div style={{ fontSize:14, fontWeight:700, color:r.changed?DC.sage:DC.dark }}>{r.adj}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ fontSize:11, color:DC.mid, background:DC.sageL, borderRadius:6, padding:"6px 10px" }}>
+              MER {nut.mer} kcal ÷ {adjNutr.kcal.toFixed(0)} kcal/包 = <strong style={{color:DC.sage}}>{packsPerDay.toFixed(1)} 包/天</strong> × 31天 = <strong style={{color:DC.sage}}>{packsPerMonth} 包/月</strong>
+            </div>
+          </div>
+
+          {/* Macro bars */}
+          <div style={{ background:DC.surface2, borderRadius:10, padding:"12px 14px", marginBottom:10 }}>
+            <div style={{ fontSize:11, fontWeight:600, color:DC.lighter, marginBottom:8, textTransform:"uppercase", letterSpacing:".5px" }}>宏量營養素</div>
+            {[
+              {label:"蛋白質", b:baseNutr.protein, a:adjNutr.protein, u:"g"},
+              {label:"脂肪",   b:baseNutr.fat,     a:adjNutr.fat,     u:"g"},
+              {label:"碳水",   b:baseNutr.cho,     a:adjNutr.cho,     u:"g"},
+              {label:"含水量", b:baseNutr.h2o_pct, a:adjNutr.h2o_pct, u:"%"},
+            ].map(({label,b,a,u})=>{
+              const changed = Math.abs(a-b)>0.05;
+              return (
+                <div key={label} style={{ marginBottom:8 }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, marginBottom:3 }}>
+                    <span style={{color:DC.mid}}>{label}</span>
+                    <div style={{ display:"flex", gap:10 }}>
+                      <span style={{color:DC.lighter,fontSize:11}}>基礎 {b.toFixed(1)}{u}</span>
+                      <span style={{fontWeight:600, color:changed?DC.sage:DC.dark}}>{a.toFixed(1)}{u} {changed?(a>b?"▲":"▼"):""}</span>
+                    </div>
+                  </div>
+                  <div style={{height:5, background:"#E8E8E8", borderRadius:3, overflow:"hidden"}}>
+                    <div style={{width:`${Math.min(100,b>0?a/b*100:0)}%`, height:"100%", background:changed?DC.sage:DC.border2, borderRadius:3, transition:"width .3s"}}/>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* 2. Minerals: Ca, P, Na, Mg */}
+          <div style={{ background: adjNutr.ca_p>=1.0&&adjNutr.ca_p<=1.3?DC.sageL:DC.earthL, border:`1px solid ${adjNutr.ca_p>=1.0&&adjNutr.ca_p<=1.3?DC.sage:DC.earth}40`, borderRadius:10, padding:"12px 14px" }}>
+            <div style={{ fontSize:11, fontWeight:600, color:adjNutr.ca_p>=1.0&&adjNutr.ca_p<=1.3?DC.sage:DC.earth, marginBottom:8, textTransform:"uppercase", letterSpacing:".5px" }}>礦物質（per pack）</div>
+            <NRow label="鈣 Ca"  value={`${(adjNutr.ca*1000).toFixed(0)}mg（基礎 ${(baseNutr.ca*1000).toFixed(0)}mg）`}  flag={adjNutr.ca_p>=1.0&&adjNutr.ca_p<=1.3?"info":"warning"} />
+            <NRow label="磷 P"   value={`${(adjNutr.p*1000).toFixed(0)}mg（基礎 ${(baseNutr.p*1000).toFixed(0)}mg）`}   />
+            <NRow label="鈉 Na"  value={`${(adjNutr.na*1000).toFixed(0)}mg（基礎 ${(baseNutr.na*1000).toFixed(0)}mg）`}  />
+            <NRow label="鎂 Mg"  value={`${(adjNutr.mg*1000).toFixed(0)}mg（基礎 ${(baseNutr.mg*1000).toFixed(0)}mg）`}  last />
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:8, paddingTop:8, borderTop:`1px solid ${adjNutr.ca_p>=1.0&&adjNutr.ca_p<=1.3?DC.sage:DC.earth}30` }}>
+              <span style={{ fontSize:12, color:DC.mid }}>Ca:P 比例（目標 1.0–1.3）</span>
+              <span style={{ fontSize:16, fontWeight:700, color:adjNutr.ca_p>=1.0&&adjNutr.ca_p<=1.3?DC.sage:DC.red }}>
+                {adjNutr.ca_p.toFixed(2)}:1 {adjNutr.ca_p>=1.0&&adjNutr.ca_p<=1.3?"✓":"✗"}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── ORDER DETAIL MODAL ────────────────────────────────────────────
+function OrderDetail({ order, onClose, onSave }) {
+  const p   = order.pet_profile || {};
+  const nut = calcNutrition(p);
+  const st  = STATUS[order.status] || STATUS.new;
+
+  const [recipe,     setRecipe]     = useState(order.assigned_recipe || "");
+  const [vetOk,      setVetOk]      = useState(order.vet_approved || false);
+  const [notes,      setNotes]      = useState(order.vet_notes || "");
+  const [ownerNotes, setOwnerNotes] = useState(order.owner_notes || "");
+  const [saving,     setSaving]     = useState(false);
+  const [tab,        setTab]        = useState("profile");
+
+  // 6. Grams state lifted here so it persists across tab switches
+  const recipeId   = recipe || order.assigned_recipe || "chicken";
+  const baseItems  = BASE_RECIPES[recipeId] || BASE_RECIPES.chicken;
+  const [grams, setGrams] = useState(() => {
+    const m = {};
+    baseItems.forEach(({name, g}) => { m[name] = g; });
+    return m;
+  });
+
+  // 8. Ship date = created_at + 10 days
+  const shipDate = (() => {
+    try {
+      const d = new Date(order.created_at);
+      d.setDate(d.getDate() + 10);
+      return d.toISOString().slice(0,10);
+    } catch { return order.ship_date || "—"; }
+  })();
+
+  const healthActive  = (p.health   ||[]).filter(h=>h!=="none");
+  const allergyActive = (p.allergies||[]).filter(a=>a!=="none");
+
+  // 4. Approve → jump directly to in_production (skip approved)
+  const handleApprove = async () => {
+    if (!vetOk)  { alert("請先勾選獸醫審核通過"); return; }
+    if (!recipe) { alert("請先指派食譜"); return; }
+    setSaving(true);
+    await onSave(order.id, {
+      status:"in_production",
+      assigned_recipe:recipe, vet_approved:vetOk, vet_notes:notes,
+      owner_notes:ownerNotes,
+      nutrition_data:{ rer:nut.rer, mer:nut.mer, adjustments:nut.adj },
+    });
+    setSaving(false);
+    onClose();
+  };
+  const handleAdvance = async () => {
+    if (!st.next) return;
+    setSaving(true);
+    await onSave(order.id, { status:st.next, vet_notes:notes, owner_notes:ownerNotes });
+    setSaving(false);
+    onClose();
+  };
+
+  const tabStyle = t => ({
+    padding:"10px 20px", cursor:"pointer", fontSize:13, fontWeight:tab===t?600:400,
+    color:tab===t?DC.sage:DC.mid,
+    borderBottom:`2px solid ${tab===t?DC.sage:"transparent"}`,
+    transition:"all .2s", background:"transparent", border:"none", fontFamily:"inherit",
+  });
+
+  return (
+    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", zIndex:900, display:"flex", alignItems:"flex-start", justifyContent:"center", overflowY:"auto", padding:"20px 16px" }}>
+      <div style={{ background:DC.surface, border:`1px solid ${DC.border}`, borderRadius:16, width:"100%", maxWidth:1000, boxShadow:"0 20px 60px rgba(0,0,0,.15)", marginBottom:40 }}>
+
+        {/* Header */}
+        <div style={{ padding:"20px 28px 16px", borderBottom:`1px solid ${DC.border}`, display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
+          <div>
+            <div style={{ fontSize:11, color:DC.light, marginBottom:4 }}>{order.id} · {order.created_at} · 預計出貨 <strong style={{color:DC.sage}}>{shipDate}</strong></div>
+            <div style={{ display:"flex", alignItems:"center", gap:10, flexWrap:"wrap", marginBottom:4 }}>
+              <span style={{ fontFamily:"Georgia,serif", fontSize:22, fontWeight:500, color:DC.dark }}>{p.petName || "—"}</span>
+              <SpeciesBadge species={p.species} size="lg" />
+              <StatusBadge status={order.status} />
+            </div>
+            <div style={{ fontSize:13, color:DC.mid }}>{p.ownerName} · {p.ownerPhone} · {p.ownerEmail}</div>
+          </div>
+          <button onClick={onClose} style={{ background:"none", border:"none", cursor:"pointer", fontSize:20, color:DC.light, padding:"4px 8px" }}>×</button>
+        </div>
+
+        {/* Tabs */}
+        <div style={{ display:"flex", borderBottom:`1px solid ${DC.border}`, paddingLeft:20, background:DC.surface }}>
+          <button style={tabStyle("profile")}   onClick={()=>setTab("profile")}>寵物資料</button>
+          <button style={tabStyle("nutrition")} onClick={()=>setTab("nutrition")}>營養計算</button>
+          <button style={tabStyle("formula")}   onClick={()=>setTab("formula")}>配方調整</button>
+          <button style={tabStyle("dm")}        onClick={()=>setTab("dm")}>乾物計算機</button>
+          <button style={tabStyle("approve")}   onClick={()=>setTab("approve")}>審核 ＆ 備註</button>
+        </div>
+
+        <div style={{ padding:"24px 28px" }}>
+
+          {/* ── PROFILE ── */}
+          {tab==="profile" && (
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:24 }}>
+              <div>
+                <div style={{ fontSize:11, fontWeight:600, letterSpacing:"1.2px", textTransform:"uppercase", color:DC.light, marginBottom:12 }}>基本資料</div>
+                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:14 }}>
+                  {[
+                    ["物種", p.species==="dog"?"狗狗":"貓咪"],
+                    ["品種", p.breed||"—"],
+                    ["性別", {male_intact:"公（未結紮）",male_neutered:"公（已結紮）",female_intact:"母（未絕育）",female_spayed:"母（已絕育）"}[p.sex]||"—"],
+                    ["年齡", p.age<1?`${Math.round(p.age*12)} 個月`:`${p.age} 歲`],
+                    ["體重", `${p.weight} kg`],
+                    ["理想體重", p.idealWeight?`${p.idealWeight} kg`:"未填"],
+                    ["體型", {toy:"小型",medium:"中型",large:"大型",giant:"超大型"}[p.size]||"—"],
+                    ["BCS", `${p.bcs} / 9`],
+                  ].map(([k,v])=>(
+                    <div key={k} style={{ background:DC.surface2, borderRadius:8, padding:"10px 12px" }}>
+                      <div style={{ fontSize:10, color:DC.lighter, marginBottom:2 }}>{k}</div>
+                      <div style={{ fontSize:13, fontWeight:500, color:DC.dark }}>{v}</div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ background:DC.surface2, borderRadius:8, padding:"10px 12px", marginBottom:8 }}>
+                  <div style={{ fontSize:10, color:DC.lighter, marginBottom:2 }}>活動量</div>
+                  <div style={{ fontSize:13, color:DC.dark }}>
+                    {({sedentary:"宅家型",low:"悠閒型",moderate:"活潑型",active:"運動型",very_active:"競技型"})[p.activity]||"—"}
+                    <span style={{ color:DC.lighter, marginLeft:8 }}>× {p.actMult}</span>
+                  </div>
+                </div>
+                <div style={{ background:DC.surface2, borderRadius:8, padding:"10px 12px" }}>
+                  <div style={{ fontSize:10, color:DC.lighter, marginBottom:2 }}>目前飲食</div>
+                  <div style={{ fontSize:12, color:DC.mid, lineHeight:1.5 }}>{p.dietNote||"未填"}</div>
+                </div>
+              </div>
+              <div>
+                {healthActive.length > 0 && (
+                  <div style={{ marginBottom:14 }}>
+                    <div style={{ fontSize:11, fontWeight:600, letterSpacing:"1.2px", textTransform:"uppercase", color:DC.earth, marginBottom:8 }}>健康狀況</div>
+                    <div style={{ marginBottom:6 }}>{healthActive.map(h=><Tag key={h} label={HEALTH_LABEL[h]||h} color={DC.earth} bg={DC.earthL}/>)}</div>
+                    {p.healthNote && <div style={{ fontSize:12, color:DC.mid, background:DC.earthL, borderRadius:8, padding:"10px 12px", lineHeight:1.6 }}>{p.healthNote}</div>}
+                  </div>
+                )}
+                {allergyActive.length > 0 && (
+                  <div style={{ marginBottom:14 }}>
+                    <div style={{ fontSize:11, fontWeight:600, letterSpacing:"1.2px", textTransform:"uppercase", color:DC.red, marginBottom:8 }}>食物過敏</div>
+                    {allergyActive.map(a=><Tag key={a} label={ALLERGY_LABEL[a]||a} color={DC.red} bg={DC.redL}/>)}
+                    {p.allergyNote && <div style={{ fontSize:12, color:DC.mid, background:DC.redL, borderRadius:8, padding:"10px 12px", marginTop:6, lineHeight:1.6 }}>{p.allergyNote}</div>}
+                  </div>
+                )}
+                <div style={{ marginBottom:14 }}>
+                  <div style={{ fontSize:11, fontWeight:600, letterSpacing:"1.2px", textTransform:"uppercase", color:DC.light, marginBottom:8 }}>健康目標</div>
+                  <div>{(p.goals||[]).map(g=><Tag key={g} label={({maintain:"維持體重",lose:"健康減重",gain:"增重",joint:"關節保健",skin:"皮膚毛髮",gut:"腸胃健康",senior:"熟齡保養",immunity:"免疫力"})[g]||g} color={DC.blue} bg={DC.blueL}/>)}</div>
+                </div>
+                <div style={{ background:DC.surface2, borderRadius:8, padding:"10px 12px" }}>
+                  <div style={{ fontSize:10, color:DC.lighter, marginBottom:2 }}>配送資料</div>
+                  <div style={{ fontSize:12, color:DC.mid }}>
+                    {({weekly:"每週配送",biweekly:"每兩週配送",monthly:"每月配送"})[p.delivery]||p.delivery}
+                    <br/>{p.address}
+                  </div>
+                </div>
+
+                {/* 5a. Owner notes */}
+                <div style={{ marginTop:12 }}>
+                  <div style={{ fontSize:11, fontWeight:600, letterSpacing:"1.2px", textTransform:"uppercase", color:DC.light, marginBottom:6 }}>飼主備註</div>
+                  <textarea
+                    value={ownerNotes} onChange={e=>setOwnerNotes(e.target.value)}
+                    placeholder="記錄飼主特殊需求、溝通紀錄、注意事項…"
+                    style={{ width:"100%", padding:"10px 12px", background:DC.surface2, border:`1px solid ${DC.border}`, borderRadius:8, color:DC.dark, fontFamily:"'Noto Sans TC',sans-serif", fontSize:12, resize:"vertical", minHeight:72, outline:"none", lineHeight:1.6, boxSizing:"border-box" }}
+                    onFocus={e=>e.target.style.borderColor=DC.sage}
+                    onBlur={e=>e.target.style.borderColor=DC.border}
+                  />
+                </div>
+
+                {/* 5b. Past orders */}
+                {(order.past_orders||[]).length > 0 && (
+                  <div style={{ marginTop:12 }}>
+                    <div style={{ fontSize:11, fontWeight:600, letterSpacing:"1.2px", textTransform:"uppercase", color:DC.light, marginBottom:8 }}>過往訂單紀錄</div>
+                    {(order.past_orders||[]).map((po,i)=>(
+                      <div key={i} style={{ background:DC.surface2, borderRadius:8, padding:"10px 12px", marginBottom:6, borderLeft:`3px solid ${DC.sage}` }}>
+                        <div style={{ display:"flex", justifyContent:"space-between", marginBottom:4 }}>
+                          <span style={{ fontSize:12, fontWeight:500, color:DC.dark }}>{po.id}</span>
+                          <span style={{ fontSize:11, color:DC.lighter }}>{po.date}</span>
+                        </div>
+                        <div style={{ display:"flex", gap:8, marginBottom:po.notes?4:0 }}>
+                          <Tag label={RECIPE_NAME[po.recipe]||po.recipe} color={DC.sage} bg={DC.sageL} />
+                          <Tag label={({shipped:"已出貨",in_production:"生產中",new:"新訂單"})[po.status]||po.status} color={DC.teal} bg={DC.tealL} />
+                        </div>
+                        {po.notes && <div style={{ fontSize:11, color:DC.mid, lineHeight:1.5 }}>{po.notes}</div>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {(order.past_orders||[]).length === 0 && (
+                  <div style={{ marginTop:12, fontSize:12, color:DC.lighter, textAlign:"center", padding:"12px", background:DC.surface2, borderRadius:8 }}>
+                    這是此寵物的第一筆訂單
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ── NUTRITION ── */}
+          {tab==="nutrition" && (
+            <div>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:20 }}>
+                {[
+                  { label:"計算體重", value:`${p.idealWeight||p.weight} kg`, color:DC.dark },
+                  { label:"RER = 70 × BW^0.75", value:`${nut.rer} kcal`, color:DC.sage },
+                  { label:"MER（最終目標）", value:`${nut.mer} kcal`, color:DC.gold },
+                  { label:"綜合乘數", value:`× ${(nut.mer/nut.rer).toFixed(2)}`, color:DC.blue },
+                ].map(c=>(
+                  <div key={c.label} style={{ background:DC.surface2, borderRadius:10, padding:"14px", textAlign:"center" }}>
+                    <div style={{ fontSize:10, color:DC.light, marginBottom:4, lineHeight:1.4 }}>{c.label}</div>
+                    <div style={{ fontFamily:"Georgia,serif", fontSize:20, fontWeight:700, color:c.color }}>{c.value}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
+                <div>
+                  <div style={{ fontSize:12, fontWeight:600, color:DC.dark, marginBottom:10 }}>每日營養目標（估算）</div>
+                  <div style={{ background:DC.surface2, borderRadius:10, padding:"12px 14px", marginBottom:12 }}>
+                    <NRow label="蛋白質（25% kcal ÷ 4）" value={`${nut.protein} g`} />
+                    <NRow label="脂肪（30% kcal ÷ 9）"   value={`${nut.fat} g`} />
+                    <NRow label="碳水化合物（35% kcal ÷ 4）" value={`${nut.cho} g`} />
+                    <NRow label="水分需求（50ml × kg）"   value={`${nut.water} ml`} last />
+                  </div>
+                  <div style={{ background:DC.surface2, borderRadius:10, padding:"12px 14px" }}>
+                    <div style={{ fontSize:11, fontWeight:600, color:DC.light, marginBottom:8, textTransform:"uppercase", letterSpacing:".8px" }}>MER 計算明細</div>
+                    <NRow label="RER 基礎"     value={`${nut.rer} kcal`} />
+                    <NRow label="生命階段乘數" value={`× ${nut.stageMult}`} />
+                    <NRow label="活動量乘數"   value={`× ${p.actMult||1.6}`} />
+                    <NRow label="體型乘數"     value={`× ${p.sizeMult||1.0}`} />
+                    <NRow label="MER 合計"     value={`${nut.mer} kcal`} flag="info" last />
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize:12, fontWeight:600, color: nut.adj.length>0?DC.earth:DC.sage, marginBottom:10 }}>
+                    {nut.adj.length > 0 ? "療癒配方調整項目" : "無特殊調整需求"}
+                  </div>
+                  {nut.adj.length > 0 ? (
+                    <div style={{ background:DC.earthL, border:`1px solid ${DC.earth}30`, borderRadius:10, padding:"12px 14px" }}>
+                      {nut.adj.map((a,i)=><NRow key={i} label={a.label} value={a.value} flag={a.flag} last={i===nut.adj.length-1}/>)}
+                    </div>
+                  ) : (
+                    <div style={{ background:DC.sageL, borderRadius:10, padding:"24px", textAlign:"center", color:DC.sage, fontSize:13 }}>
+                      此毛孩健康良好，使用標準配方即可。
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── FORMULA ADJUSTMENT ── */}
+          {tab==="formula" && (
+            <FormulaTab order={order} p={p} nut={nut} recipe={recipe} grams={grams} setGrams={setGrams} onSave={onSave} onClose={onClose} saving={saving} setSaving={setSaving} />
+          )}
+
+          {/* ── DRY MATTER ── */}
+          {tab==="dm" && (
+            <div>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
+                <div>
+                  <div style={{ fontSize:14, fontWeight:600, color:DC.dark, marginBottom:3 }}>乾物計算機（DM Basis Calculator）</div>
+                  <div style={{ fontSize:12, color:DC.mid }}>已自動載入 <strong>{RECIPE_NAME[recipeId]||"雞肉鮮蔬"}</strong> 配方食材，可直接調整克數重新計算。</div>
+                </div>
+                <SpeciesBadge species={p.species} size="lg" />
+              </div>
+              <DryMatterCalc species={p.species} recipeId={recipeId} grams={grams} setGrams={setGrams} />
+            </div>
+          )}
+
+          {/* ── APPROVE ── */}
+          {tab==="approve" && (
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:24 }}>
+              <div>
+                <div style={{ fontSize:12, fontWeight:600, color:DC.dark, marginBottom:10 }}>指派食譜</div>
+                <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:8, marginBottom:12 }}>
+                  {Object.entries(RECIPE_NAME).filter(([id])=>!(ALLERGEN_MAP[id]||[]).some(a=>allergyActive.includes(a))).map(([id,name])=>(
+                    <div key={id} onClick={()=>setRecipe(id)} style={{
+                      border:`1.5px solid ${recipe===id?DC.sage:DC.border}`,
+                      borderRadius:8, padding:"12px 8px", textAlign:"center", cursor:"pointer",
+                      background:recipe===id?DC.sageL:"white", transition:"all .2s",
+                    }}>
+                      <div style={{ fontSize:12, color:recipe===id?DC.sage:DC.dark, fontWeight:recipe===id?600:400 }}>{name}</div>
+                    </div>
+                  ))}
+                </div>
+                {allergyActive.length > 0 && <div style={{ fontSize:11, color:DC.red, marginBottom:12 }}>含過敏原食譜已隱藏（{allergyActive.map(a=>ALLERGY_LABEL[a]).filter(Boolean).join("、")}）</div>}
+
+                {/* Vet approval */}
+                <div onClick={()=>setVetOk(v=>!v)} style={{
+                  display:"flex", alignItems:"center", gap:10, padding:"12px 14px",
+                  background:vetOk?DC.sageL:"white", border:`1.5px solid ${vetOk?DC.sage:DC.border}`,
+                  borderRadius:10, cursor:"pointer", marginBottom:12, transition:"all .2s",
+                }}>
+                  <div style={{ width:18, height:18, borderRadius:4, border:`2px solid ${vetOk?DC.sage:DC.border}`, display:"flex", alignItems:"center", justifyContent:"center", background:vetOk?DC.sage:"white", flexShrink:0 }}>
+                    {vetOk&&<span style={{ color:"white", fontSize:11, fontWeight:700 }}>✓</span>}
+                  </div>
+                  <div style={{ fontSize:13, color:vetOk?DC.sageD:DC.mid, fontWeight:vetOk?600:400 }}>獸醫營養師已審核通過</div>
+                </div>
+
+                {/* 4. Actions: new → in_production directly */}
+                <div style={{ display:"flex", gap:8 }}>
+                  {order.status === "new" && (
+                    <button onClick={handleApprove} disabled={saving} style={{ flex:1, padding:"11px", background:DC.sage, color:"white", border:"none", borderRadius:50, fontFamily:"inherit", fontSize:13, fontWeight:600, cursor:"pointer" }}>
+                      {saving?"處理中…":"核准並直接送生產"}
+                    </button>
+                  )}
+                  {order.status === "in_production" && (
+                    <button onClick={handleAdvance} disabled={saving} style={{ flex:1, padding:"11px", background:DC.teal, color:"white", border:"none", borderRadius:50, fontFamily:"inherit", fontSize:13, fontWeight:600, cursor:"pointer" }}>
+                      {saving?"處理中…":"標記為已出貨"}
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize:12, fontWeight:600, color:DC.dark, marginBottom:8 }}>內部備註</div>
+                <textarea value={notes} onChange={e=>setNotes(e.target.value)}
+                  placeholder="輸入審核備註、配方調整說明…"
+                  style={{ width:"100%", padding:"12px", background:DC.surface2, border:`1px solid ${DC.border}`, borderRadius:10, color:DC.dark, fontFamily:"'Noto Sans TC',sans-serif", fontSize:13, resize:"vertical", minHeight:180, outline:"none", lineHeight:1.7, boxSizing:"border-box" }}
+                  onFocus={e=>e.target.style.borderColor=DC.sage}
+                  onBlur={e=>e.target.style.borderColor=DC.border}
+                />
+                <button onClick={async ()=>{ setSaving(true); await onSave(order.id,{vet_notes:notes,assigned_recipe:recipe,vet_approved:vetOk}); setSaving(false); }}
+                  style={{ marginTop:10, padding:"9px 20px", background:"white", color:DC.mid, border:`1px solid ${DC.border}`, borderRadius:50, fontFamily:"inherit", fontSize:12, cursor:"pointer" }}>
+                  {saving?"儲存中…":"儲存備註"}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── ORDER ROW ─────────────────────────────────────────────────────
+function OrderRow({ order, onClick }) {
+  const p   = order.pet_profile || {};
+  const nut = calcNutrition(p);
+  const healthActive  = (p.health   ||[]).filter(h=>h!=="none");
+  const allergyActive = (p.allergies||[]).filter(a=>a!=="none");
+
+  return (
+    <div onClick={onClick} style={{
+      background:DC.surface, border:`1px solid ${DC.border}`,
+      borderRadius:12, padding:"14px 20px", marginBottom:8,
+      cursor:"pointer", transition:"all .2s",
+    }}
+      onMouseEnter={e=>{ e.currentTarget.style.borderColor=DC.sage; e.currentTarget.style.boxShadow="0 2px 12px rgba(74,113,80,.12)"; }}
+      onMouseLeave={e=>{ e.currentTarget.style.borderColor=DC.border; e.currentTarget.style.boxShadow="none"; }}
+    >
+      <div style={{ display:"grid", gridTemplateColumns:"190px 1fr auto", gap:16, alignItems:"center" }}>
+        <div>
+          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
+            <span style={{ fontFamily:"Georgia,serif", fontSize:17, fontWeight:500, color:DC.dark }}>{p.petName||"—"}</span>
+            <SpeciesBadge species={p.species} />
+          </div>
+          <div style={{ fontSize:12, color:DC.mid }}>{p.ownerName} · {p.breed}</div>
+          <div style={{ fontSize:11, color:DC.lighter, marginTop:2 }}>{order.id} · {order.created_at?.slice(0,10)}</div>
+        </div>
+        <div>
+          <div style={{ display:"flex", flexWrap:"wrap", gap:3, marginBottom:5 }}>
+            {healthActive.map(h=><Tag key={h} label={HEALTH_LABEL[h]||h} color={DC.earth} bg={DC.earthL}/>)}
+            {allergyActive.map(a=><Tag key={a} label={`✕ ${ALLERGY_LABEL[a]||a}`} color={DC.red} bg={DC.redL}/>)}
+            {order.assigned_recipe && <Tag label={RECIPE_NAME[order.assigned_recipe]} color={DC.sage} bg={DC.sageL}/>}
+          </div>
+          <div style={{ fontSize:12, color:DC.light }}>
+            MER <span style={{ color:DC.dark, fontWeight:600 }}>{nut.mer} kcal</span>
+            <span style={{ margin:"0 6px", color:DC.border }}>|</span>
+            {({weekly:"每週",biweekly:"每兩週",monthly:"每月"})[p.delivery]} 配送
+            <span style={{ margin:"0 6px", color:DC.border }}>|</span>
+            NT${(order.plan_price||0).toLocaleString()} / 月
+          </div>
+        </div>
+        <div style={{ textAlign:"right" }}>
+          <StatusBadge status={order.status} />
+          {order.vet_approved && <div style={{ fontSize:11, color:DC.sage, marginTop:5 }}>已獸醫審核</div>}
+          {order.ship_date && <div style={{ fontSize:11, color:DC.mid, marginTop:4 }}>預計出貨 {order.ship_date}</div>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── LOGIN ─────────────────────────────────────────────────────────
+function LoginGate({ onLogin }) {
+  const [pw, setPw] = useState("");
+  const [err, setErr] = useState(false);
+  const submit = () => {
+    if (pw === "pawformula2026") onLogin();
+    else { setErr(true); setTimeout(()=>setErr(false), 2000); }
+  };
+  return (
+    <div style={{ background:DC.bg, minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"'Noto Sans TC',sans-serif" }}>
+      <div style={{ background:DC.surface, border:`1px solid ${DC.border}`, borderRadius:16, padding:"44px 40px", width:360, textAlign:"center", boxShadow:"0 4px 24px rgba(0,0,0,.08)" }}>
+        <div style={{ fontFamily:"Georgia,serif", fontSize:26, fontWeight:600, color:DC.dark, marginBottom:4 }}>
+          Paw<span style={{ color:DC.sage }}>Formula</span>
+        </div>
+        <div style={{ fontSize:13, color:DC.mid, marginBottom:28 }}>客製化訂單管理後台</div>
+        <input type="password" value={pw} onChange={e=>setPw(e.target.value)} onKeyDown={e=>e.key==="Enter"&&submit()}
+          placeholder="請輸入密碼"
+          style={{ width:"100%", padding:"11px 16px", background:DC.surface2, border:`1.5px solid ${err?DC.red:DC.border}`, borderRadius:8, color:DC.dark, fontFamily:"inherit", fontSize:14, outline:"none", boxSizing:"border-box", marginBottom:err?6:14, textAlign:"center" }}
+        />
+        {err && <div style={{ fontSize:12, color:DC.red, marginBottom:10 }}>密碼錯誤</div>}
+        <button onClick={submit} style={{ width:"100%", padding:"12px", background:DC.sage, color:"white", border:"none", borderRadius:50, fontFamily:"inherit", fontSize:14, fontWeight:600, cursor:"pointer" }}>登入</button>
+        <div style={{ fontSize:11, color:DC.lighter, marginTop:14 }}>預設密碼：pawformula2026</div>
+      </div>
+    </div>
+  );
+}
+
+// ── MAIN DASHBOARD ────────────────────────────────────────────────
+function DashboardApp() {
+  const [loggedIn,     setLoggedIn]  = useState(true);
+  const [orders,       setOrders]    = useState(MOCK);
+  const [selected,     setSelected]  = useState(null);
+  const [filterStatus, setFilter]    = useState("all");
+  const [searchQ,      setSearchQ]   = useState("");
+  const [activeTab,    setActiveTab] = useState("orders");
+
+  const updateOrder = (id, changes) => {
+    setOrders(prev => prev.map(o => o.id===id ? {...o,...changes} : o));
+  };
+
+  const filtered = orders.filter(o => {
+    const p = o.pet_profile || {};
+    const matchStatus = filterStatus==="all" || o.status===filterStatus;
+    const q = searchQ.toLowerCase();
+    const matchSearch = !q
+      || (p.petName||"").toLowerCase().includes(q)
+      || (p.ownerName||"").toLowerCase().includes(q)
+      || (p.ownerPhone||"").replace(/-/g,"").includes(q.replace(/-/g,""))
+      || (p.ownerEmail||"").toLowerCase().includes(q)
+      || (o.id||"").toLowerCase().includes(q)
+      || (p.breed||"").toLowerCase().includes(q)
+      || (p.address||"").toLowerCase().includes(q);
+    return matchStatus && matchSearch;
+  });
+
+  const counts = Object.fromEntries(Object.keys(STATUS).map(s=>[s, orders.filter(o=>o.status===s).length]));
+
+  if (!loggedIn) return <LoginGate onLogin={()=>setLoggedIn(true)} />;
+
+  return (
+    <div style={{ fontFamily:"'Noto Sans TC',sans-serif", background:DC.bg, minHeight:"100vh", color:DC.dark }}>
+
+      {/* NAV */}
+      <div style={{ background:DC.surface, borderBottom:`1px solid ${DC.border}`, padding:"0 28px", height:56, display:"flex", alignItems:"center", justifyContent:"space-between", position:"sticky", top:0, zIndex:100, boxShadow:"0 1px 3px rgba(0,0,0,.06)" }}>
+        <div style={{ display:"flex", alignItems:"center", gap:24 }}>
+          <div style={{ fontFamily:"Georgia,serif", fontSize:19, fontWeight:600, color:DC.dark }}>
+            Paw<span style={{ color:DC.sage }}>Formula</span>
+            <span style={{ fontSize:11, color:DC.light, marginLeft:8, fontFamily:"inherit", fontWeight:400 }}>客製化訂單管理</span>
+          </div>
+          <div style={{ display:"flex", gap:2 }}>
+            {[{id:"orders",label:"訂單列表"},{id:"analytics",label:"數據總覽"}].map(t=>(
+              <button key={t.id} onClick={()=>setActiveTab(t.id)} style={{ padding:"5px 14px", borderRadius:50, fontSize:13, fontWeight:activeTab===t.id?600:400, color:activeTab===t.id?DC.sage:DC.mid, background:activeTab===t.id?DC.sageL:"transparent", border:"none", cursor:"pointer" }}>
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+          <a href="#" style={{ padding:"5px 12px", borderRadius:50, fontSize:12, color:DC.mid, border:`1px solid ${DC.border}`, textDecoration:"none" }}>客戶網站</a>
+          <a href="#" style={{ padding:"5px 12px", borderRadius:50, fontSize:12, color:DC.mid, border:`1px solid ${DC.border}`, textDecoration:"none" }}>後台系統</a>
+          <button onClick={()=>setLoggedIn(false)} style={{ width:30, height:30, borderRadius:"50%", background:DC.sageL, border:"none", cursor:"pointer", fontSize:12, color:DC.sage, fontWeight:700 }}>登出</button>
+        </div>
+      </div>
+
+      <div style={{ maxWidth:1140, margin:"0 auto", padding:"22px 20px" }}>
+
+        {/* ANALYTICS */}
+        {activeTab==="analytics" && (
+          <div>
+            <div style={{ fontFamily:"Georgia,serif", fontSize:20, fontWeight:500, color:DC.dark, marginBottom:18 }}>數據總覽</div>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:24 }}>
+              {[
+                { label:"總訂單", value:orders.length, color:DC.dark },
+                { label:"新訂單", value:counts.new||0, color:DC.blue },
+                { label:"生產中", value:counts.in_production||0, color:DC.earth },
+                { label:"已出貨", value:counts.shipped||0, color:DC.sage },
+              ].map(c=>(
+                <div key={c.label} style={{ background:DC.surface, border:`1px solid ${DC.border}`, borderRadius:12, padding:"16px 18px" }}>
+                  <div style={{ fontFamily:"Georgia,serif", fontSize:26, fontWeight:700, color:c.color }}>{c.value}</div>
+                  <div style={{ fontSize:12, color:DC.mid, marginTop:4 }}>{c.label}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
+              <div style={{ background:DC.surface, border:`1px solid ${DC.border}`, borderRadius:12, padding:"18px 20px" }}>
+                <div style={{ fontSize:13, fontWeight:600, color:DC.dark, marginBottom:14 }}>健康狀況分布</div>
+                {[{k:"ckd",l:"腎臟病 CKD"},{k:"cardiac",l:"心臟病"},{k:"arthritis",l:"關節炎"},{k:"obesity",l:"肥胖"},{k:"skin",l:"皮膚過敏"},{k:"pancreatitis",l:"胰臟炎"}].map(({k,l})=>{
+                  const n = orders.filter(o=>(o.pet_profile?.health||[]).includes(k)).length;
+                  const pct = orders.length>0 ? Math.round(n/orders.length*100) : 0;
+                  return (
+                    <div key={k} style={{ marginBottom:10 }}>
+                      <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:DC.mid, marginBottom:4 }}>
+                        <span>{l}</span><span style={{ color:DC.earth }}>{n} 筆</span>
+                      </div>
+                      <div style={{ height:5, background:DC.surface2, borderRadius:3, overflow:"hidden" }}>
+                        <div style={{ width:`${pct}%`, height:"100%", background:DC.earth, borderRadius:3 }}/>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{ background:DC.surface, border:`1px solid ${DC.border}`, borderRadius:12, padding:"18px 20px" }}>
+                <div style={{ fontSize:13, fontWeight:600, color:DC.dark, marginBottom:14 }}>食譜指派分布</div>
+                {Object.entries(RECIPE_NAME).map(([id,name])=>{
+                  const n = orders.filter(o=>o.assigned_recipe===id).length;
+                  const pct = orders.length>0 ? Math.round(n/orders.length*100) : 0;
+                  return (
+                    <div key={id} style={{ marginBottom:10 }}>
+                      <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:DC.mid, marginBottom:4 }}>
+                        <span>{name}</span><span style={{ color:DC.sage }}>{n} 筆</span>
+                      </div>
+                      <div style={{ height:5, background:DC.surface2, borderRadius:3, overflow:"hidden" }}>
+                        <div style={{ width:`${pct}%`, height:"100%", background:DC.sage, borderRadius:3 }}/>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ORDERS */}
+        {activeTab==="orders" && (
+          <div>
+            {/* Status filter cards */}
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:18 }}>
+              {Object.entries(STATUS).map(([status,cfg])=>(
+                <div key={status} onClick={()=>setFilter(filterStatus===status?"all":status)}
+                  style={{ background:filterStatus===status?cfg.bg:DC.surface, border:`1px solid ${filterStatus===status?cfg.color:DC.border}`, borderRadius:10, padding:"12px 14px", cursor:"pointer", transition:"all .2s" }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:4 }}>
+                    <span style={{ width:8, height:8, borderRadius:"50%", background:cfg.dot }}/>
+                    <span style={{ fontSize:11, color:DC.mid }}>{cfg.label}</span>
+                  </div>
+                  <div style={{ fontFamily:"Georgia,serif", fontSize:24, fontWeight:700, color:filterStatus===status?cfg.color:DC.dark }}>{counts[status]||0}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Search */}
+            <div style={{ display:"flex", gap:10, marginBottom:14, alignItems:"center" }}>
+              <input value={searchQ} onChange={e=>setSearchQ(e.target.value)}
+                placeholder="搜尋寵物名稱、飼主、訂單編號、品種…"
+                style={{ flex:1, padding:"9px 16px", background:DC.surface, border:`1px solid ${DC.border}`, borderRadius:50, color:DC.dark, fontFamily:"inherit", fontSize:13, outline:"none" }}
+                onFocus={e=>e.target.style.borderColor=DC.sage}
+                onBlur={e=>e.target.style.borderColor=DC.border}
+              />
+              {filterStatus!=="all" && <button onClick={()=>setFilter("all")} style={{ padding:"9px 14px", background:DC.surface, border:`1px solid ${DC.border}`, borderRadius:50, fontSize:12, color:DC.mid, cursor:"pointer" }}>× 清除</button>}
+              <span style={{ fontSize:12, color:DC.light, whiteSpace:"nowrap" }}>{filtered.length} 筆</span>
+            </div>
+
+
+            {filtered.length===0 ? (
+              <div style={{ textAlign:"center", padding:"48px 0", color:DC.lighter }}>
+                <div style={{ fontSize:14 }}>找不到符合條件的訂單</div>
+              </div>
+            ) : filtered.map(o=>(
+              <OrderRow key={o.id} order={o} onClick={()=>setSelected(o)} />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {selected && (
+        <OrderDetail
+          order={orders.find(o=>o.id===selected.id)||selected}
+          onClose={()=>setSelected(null)}
+          onSave={async (id,changes)=>{ updateOrder(id,changes); setSelected(p=>({...p,...changes})); }}
+        />
+      )}
+    </div>
+  );
 }
