@@ -849,7 +849,7 @@ function IntakePage({ setPage, cart, setCart }) {
                 </div>
                 <div style={{ fontSize:12, color:"#6B6B6B", marginBottom:18 }}>/ 月 ∙ 隨時可暫停或取消</div>
                 <button onClick={async ()=>{
-                  if(!plan){ alert(`請先為${petName||"您的毛孩"}選擇食譜 🐾`); return; }
+                  console.log("BUTTON CLICKED"); if(!plan){ alert(`請先為${petName||"您的毛孩"}選擇食譜 🐾`); return; }
 
                   // Save to Supabase customized_orders
                   const petProfile = {
@@ -861,7 +861,7 @@ function IntakePage({ setPage, cart, setCart }) {
                     rer: Math.round(70 * Math.pow(parseFloat(weight)||0, 0.75)),
                     plan, delivery, addons,
                   };
-                  await supabase.from("customized_orders").insert({
+                  const {data:cdData, error:cdError} = await supabase.from("customized_orders").insert({
                     status: "new",
                     pet_profile: petProfile,
                     nutrition_data: nutritionData,
