@@ -849,7 +849,7 @@ function IntakePage({ setPage, cart, setCart }) {
                 </div>
                 <div style={{ fontSize:12, color:"#6B6B6B", marginBottom:18 }}>/ 月 ∙ 隨時可暫停或取消</div>
                 <button onClick={async ()=>{
-                  const saveAndProceed=async()=>{if(!plan){ alert(`請先為${petName||"您的毛孩"}選擇食譜 🐾`); return; }
+                  if(!plan){ alert(`請先為${petName||"您的毛孩"}選擇食譜 🐾`); return; }
 
                   // Save to Supabase customized_orders
                   const petProfile = {
