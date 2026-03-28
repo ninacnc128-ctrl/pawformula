@@ -2095,8 +2095,10 @@ function AdminDashboard({ onLogout }) {
 }
 
 function AdminApp() {
-  const [loggedIn, setLoggedIn] = useState(false);
-  return loggedIn ? <AdminDashboard onLogout={() => setLoggedIn(false)} /> : <AdminLoginPage onLogin={() => setLoggedIn(true)} />;
+  const [loggedIn, setLoggedIn] = useState(() => localStorage.getItem("pf_admin") === "true");
+  const login = () => { localStorage.setItem("pf_admin", "true"); setLoggedIn(true); };
+  const logout = () => { localStorage.removeItem("pf_admin"); setLoggedIn(false); };
+  return loggedIn ? <AdminDashboard onLogout={logout} /> : <AdminLoginPage onLogin={login} />;
 }
 
 // ── SITE PASSWORD GATE ────────────────────────────────────────────
@@ -2151,8 +2153,8 @@ function CustomerSite() {
 
 // ── MAIN APP ──────────────────────────────────────────────────────
 export default function App() {
-  const [unlocked, setUnlocked] = useState(() => sessionStorage.getItem("pf_unlocked") === "true");
-  const unlock = () => { sessionStorage.setItem("pf_unlocked", "true"); setUnlocked(true); };
+  const [unlocked, setUnlocked] = useState(() => localStorage.getItem("pf_unlocked") === "true");
+  const unlock = () => { localStorage.setItem("pf_unlocked", "true"); setUnlocked(true); };
 
   if (window.location.pathname === "/admin") return <AdminApp />;
   if (window.location.pathname === "/dashboard") return <DashboardApp />;
@@ -3158,7 +3160,9 @@ function LoginGate({ onLogin }) {
 
 // ── MAIN DASHBOARD ────────────────────────────────────────────────
 function DashboardApp() {
-  const [loggedIn,     setLoggedIn]  = useState(false);
+  const [loggedIn,     setLoggedIn]  = useState(() => localStorage.getItem("pf_dashboard") === "true");
+  const login = () => { localStorage.setItem("pf_dashboard", "true"); setLoggedIn(true); };
+  const logout = () => { localStorage.removeItem("pf_dashboard"); setLoggedIn(false); };
   const [orders,       setOrders]    = useState([]);
   const [loading,      setLoading]   = useState(false);
   const [selected,     setSelected]  = useState(null);
@@ -3200,7 +3204,7 @@ function DashboardApp() {
 
   const counts = Object.fromEntries(Object.keys(STATUS).map(s=>[s, orders.filter(o=>o.status===s).length]));
 
-  if (!loggedIn) return <LoginGate onLogin={()=>setLoggedIn(true)} />;
+  if (!loggedIn) return <LoginGate onLogin={login} />;
 
   return (
     <div style={{ fontFamily:"'Noto Sans TC',sans-serif", background:DC.bg, minHeight:"100vh", color:DC.dark }}>
@@ -3222,7 +3226,7 @@ function DashboardApp() {
         <div style={{ display:"flex", gap:6, alignItems:"center" }}>
           <a href="/" style={{ padding:"5px 10px", borderRadius:50, fontSize:11, color:DC.mid, border:`1px solid ${DC.border}`, textDecoration:"none", whiteSpace:"nowrap" }}>官網</a>
           <a href="/admin" style={{ padding:"5px 10px", borderRadius:50, fontSize:11, color:DC.mid, border:`1px solid ${DC.border}`, textDecoration:"none", whiteSpace:"nowrap" }}>後台</a>
-          <button onClick={()=>setLoggedIn(false)} style={{ padding:"5px 10px", borderRadius:50, fontSize:11, background:DC.sageL, border:"none", cursor:"pointer", color:DC.sage, fontWeight:600, whiteSpace:"nowrap" }}>登出</button>
+          <button onClick={logout} style={{ padding:"5px 10px", borderRadius:50, fontSize:11, background:DC.sageL, border:"none", cursor:"pointer", color:DC.sage, fontWeight:600, whiteSpace:"nowrap" }}>登出</button>
         </div>
       </div>
 
