@@ -108,35 +108,34 @@ const BCSCard = ({ num, tag, desc, tagColor, bg, border, selected, onClick }) =>
 
 const SharedNav = ({ page, setPage }) => {
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   return (
-    <nav style={{ background:C.white, borderBottom:`1px solid ${C.border}`, padding:"0 40px", height:64, display:"flex", alignItems:"center", justifyContent:"space-between", position:"sticky", top:0, zIndex:200 }}>
-      <div onClick={()=>setPage("home")} style={{ fontFamily:"Georgia,serif", fontSize:22, fontWeight:600, color:C.dark, cursor:"pointer" }}>
+    <nav style={{ background:C.white, borderBottom:`1px solid ${C.border}`, padding:"0 20px", height:56, display:"flex", alignItems:"center", justifyContent:"space-between", position:"sticky", top:0, zIndex:200 }}>
+      <div onClick={()=>setPage("home")} style={{ fontFamily:"Georgia,serif", fontSize:20, fontWeight:600, color:C.dark, cursor:"pointer" }}>
         Paw<span style={{ color:C.sage }}>Formula</span>
       </div>
-      <div style={{ display:"flex", alignItems:"center", gap:28 }}>
 
-        {/* About dropdown */}
+      {/* Desktop nav */}
+      <div style={{ display:"flex", alignItems:"center", gap:24, "@media(max-width:600px)":{display:"none"} }}>
         <div style={{ position:"relative" }}
           onMouseEnter={()=>setAboutOpen(true)}
           onMouseLeave={()=>setAboutOpen(false)}>
-          <div style={{ fontSize:13, fontWeight:["story_team","philosophy","faq"].includes(page)?700:500, color:["story_team","philosophy","faq"].includes(page)?C.sageD:C.mid, borderBottom:["story_team","philosophy","faq"].includes(page)?`2px solid ${C.sage}`:"none", paddingBottom:2, cursor:"pointer", display:"flex", alignItems:"center", gap:4 }}>
-            關於 PawFormula
-            <span style={{ fontSize:10, color:C.light }}>▾</span>
+          <div style={{ fontSize:13, fontWeight:500, color:C.mid, cursor:"pointer", display:"flex", alignItems:"center", gap:4 }}>
+            關於 PawFormula <span style={{ fontSize:10 }}>▾</span>
           </div>
-          {/* Bridge div fills the gap so mouse doesn't leave */}
           {aboutOpen && <div style={{ position:"absolute", top:"100%", left:0, width:"100%", height:16, background:"transparent" }} />}
           {aboutOpen && (
             <div style={{ position:"absolute", top:"calc(100% + 10px)", left:0, background:C.white, border:`1px solid ${C.border}`, borderRadius:14, boxShadow:"0 8px 32px rgba(0,0,0,.12)", minWidth:220, overflow:"hidden", zIndex:300 }}>
               {[
-                { id:"story_team",  icon:"📖", label:"品牌故事 ＆ 研發團隊", sub:"我們是誰，從哪裡來" },
-                { id:"philosophy",  icon:"🌿", label:"配方理念 ＆ 認證",     sub:"原形食物與製程標準" },
-                { id:"faq",         icon:"💬", label:"常見問題 FAQ",          sub:"您最想知道的事" },
+                { id:"story_team", icon:"📖", label:"品牌故事 ＆ 研發團隊", sub:"我們是誰，從哪裡來" },
+                { id:"philosophy", icon:"🌿", label:"配方理念 ＆ 認證", sub:"原形食物與製程標準" },
+                { id:"faq", icon:"💬", label:"常見問題 FAQ", sub:"您最想知道的事" },
               ].map((item, i) => (
                 <div key={item.id} onClick={()=>{ setPage(item.id); setAboutOpen(false); }}
-                  style={{ display:"flex", alignItems:"flex-start", gap:12, padding:"14px 18px", cursor:"pointer", borderTop: i>0?`1px solid ${C.border}`:"none", background:page===item.id?C.sageL:"white", transition:"background .15s" }}>
-                  <span style={{ fontSize:20, marginTop:1 }}>{item.icon}</span>
+                  style={{ display:"flex", alignItems:"flex-start", gap:12, padding:"14px 18px", cursor:"pointer", borderTop:i>0?`1px solid ${C.border}`:"none", background:page===item.id?C.sageL:"white" }}>
+                  <span style={{ fontSize:20 }}>{item.icon}</span>
                   <div>
-                    <div style={{ fontSize:13, fontWeight:page===item.id?600:500, color:page===item.id?C.sageD:C.dark }}>{item.label}</div>
+                    <div style={{ fontSize:13, fontWeight:500, color:C.dark }}>{item.label}</div>
                     <div style={{ fontSize:11, color:C.light, marginTop:2 }}>{item.sub}</div>
                   </div>
                 </div>
@@ -144,14 +143,35 @@ const SharedNav = ({ page, setPage }) => {
             </div>
           )}
         </div>
-
-        <div onClick={()=>setPage("recipes")} style={{ fontSize:13, fontWeight:page==="recipes"?700:500, color:page==="recipes"?C.sageD:C.mid, borderBottom:page==="recipes"?`2px solid ${C.sage}`:"none", paddingBottom:2, cursor:"pointer" }}>
-          食譜系列
-        </div>
-        <div onClick={()=>{ setPage("intake"); window.scrollTo({top:0}); }} style={{ padding:"9px 20px", background:C.sage, color:"white", borderRadius:50, fontSize:13, fontWeight:600, cursor:"pointer", transition:"all .2s" }}>
-          開始客製 →
-        </div>
+        <div onClick={()=>setPage("recipes")} style={{ fontSize:13, fontWeight:500, color:C.mid, cursor:"pointer" }}>食譜系列</div>
+        <div onClick={()=>{ setPage("intake"); window.scrollTo({top:0}); }} style={{ padding:"8px 18px", background:C.sage, color:"white", borderRadius:50, fontSize:13, fontWeight:600, cursor:"pointer" }}>開始客製 →</div>
       </div>
+
+      {/* Mobile hamburger */}
+      <div onClick={()=>setMenuOpen(!menuOpen)} style={{ fontSize:22, cursor:"pointer", color:C.dark, userSelect:"none" }}>
+        {menuOpen ? "✕" : "☰"}
+      </div>
+
+      {/* Mobile dropdown menu */}
+      {menuOpen && (
+        <div style={{ position:"fixed", top:56, left:0, right:0, background:C.white, borderBottom:`1px solid ${C.border}`, zIndex:300, padding:"16px 20px", display:"flex", flexDirection:"column", gap:0 }}>
+          {[
+            { id:"story_team", label:"品牌故事 ＆ 研發團隊" },
+            { id:"philosophy", label:"配方理念 ＆ 認證" },
+            { id:"faq", label:"常見問題 FAQ" },
+            { id:"recipes", label:"食譜系列" },
+          ].map((item, i) => (
+            <div key={item.id} onClick={()=>{ setPage(item.id); setMenuOpen(false); }}
+              style={{ padding:"14px 0", fontSize:14, fontWeight:500, color:C.dark, borderBottom:`1px solid ${C.border}`, cursor:"pointer" }}>
+              {item.label}
+            </div>
+          ))}
+          <div onClick={()=>{ setPage("intake"); setMenuOpen(false); window.scrollTo({top:0}); }}
+            style={{ marginTop:14, padding:"12px", background:C.sage, color:"white", borderRadius:50, fontSize:14, fontWeight:600, cursor:"pointer", textAlign:"center" }}>
+            開始客製 →
+          </div>
+        </div>
+      )}
     </nav>
   );
 };
@@ -162,7 +182,7 @@ function HomePage({ setPage }) {
     <div style={{ fontFamily:"'Noto Sans TC',sans-serif", color:C.dark, background:C.cream }}>
 
       {/* HERO */}
-      <div style={{ background:C.white, padding:"72px 48px 64px", display:"grid", gridTemplateColumns:"1fr 1fr", gap:60, alignItems:"center", maxWidth:1100, margin:"0 auto" }}>
+      <div style={{ background:C.white, padding:"40px 24px 48px", display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(280px, 1fr))", gap:40, alignItems:"center", maxWidth:1100, margin:"0 auto" }}>
         <div>
           <div style={{ fontSize:11, fontWeight:600, letterSpacing:"2.5px", textTransform:"uppercase", color:C.sage, marginBottom:16 }}>台灣第一個個人化冷凍寵物鮮食</div>
           <h1 style={{ fontFamily:"Georgia,serif", fontSize:48, fontWeight:500, lineHeight:1.2, marginBottom:20, color:C.dark }}>
@@ -1750,7 +1770,6 @@ function AdminLoginPage({ onLogin }) {
         </div>
         <button onClick={() => pw === ADMIN_PW ? onLogin() : setError(true)}
           style={{ width: "100%", padding: 12, background: C.sage, color: "white", border: "none", borderRadius: 50, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>登入</button>
-        <div style={{ fontSize: 11, color: C.light, textAlign: "center", marginTop: 12 }}>預設密碼：pawformula2024</div>
       </div>
     </div>
   );
@@ -1885,22 +1904,25 @@ function AdminDashboard({ onLogout }) {
   return (
     <div style={{ fontFamily: "'Noto Sans TC', sans-serif", background: C.cream, minHeight: "100vh" }}>
       {/* Topbar */}
-      <div style={{ background: C.white, borderBottom: `1px solid ${C.border}`, padding: "0 32px", height: 60, display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 100 }}>
-        <div style={{ fontFamily: "Georgia, serif", fontSize: 20, fontWeight: 600, color: C.dark }}>
+      <div style={{ background: C.white, borderBottom: `1px solid ${C.border}`, padding: "0 16px", height: 56, display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 100 }}>
+        <div style={{ fontFamily: "Georgia, serif", fontSize: 17, fontWeight: 600, color: C.dark }}>
           Paw<span style={{ color: C.sage }}>Formula</span>
-          <span style={{ fontSize: 12, fontWeight: 400, color: C.mid, marginLeft: 10 }}>後台管理</span>
+          <span style={{ fontSize: 11, fontWeight: 400, color: C.mid, marginLeft: 8 }}>後台管理</span>
         </div>
-        <div style={{ display: "flex", gap: 10 }}>
-          <a href="/" style={{ fontSize: 12, padding: "6px 14px", border: `1px solid ${C.border}`, borderRadius: 50, background: "white", color: C.mid, cursor: "pointer", fontFamily: "inherit", textDecoration: "none" }}>← 回到官網</a>
-          <button onClick={exportCSV} style={{ fontSize: 12, padding: "6px 14px", border: `1px solid ${C.border}`, borderRadius: 50, background: "white", color: C.mid, cursor: "pointer", fontFamily: "inherit" }}>⬇ 匯出 CSV</button>
-          <button onClick={fetchOrders} style={{ fontSize: 12, padding: "6px 14px", border: `1px solid ${C.border}`, borderRadius: 50, background: "white", color: C.mid, cursor: "pointer", fontFamily: "inherit" }}>🔄 重新整理</button>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
+          <a href="/" style={{ fontSize: 11, padding: "5px 10px", border: `1px solid ${C.border}`, borderRadius: 50, background: "white", color: C.mid, cursor: "pointer", fontFamily: "inherit", textDecoration: "none", whiteSpace: "nowrap" }}>← 官網</a>
+          <button onClick={exportCSV} style={{ fontSize: 11, padding: "5px 10px", border: `1px solid ${C.border}`, borderRadius: 50, background: "white", color: C.mid, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>⬇ CSV</button>
+          <button onClick={fetchOrders} style={{ fontSize: 11, padding: "5px 10px", border: `1px solid ${C.border}`, borderRadius: 50, background: "white", color: C.mid, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>🔄</button>
+          <button onClick={onLogout} style={{ fontSize: 11, padding: "5px 10px", border: `1px solid ${C.border}`, borderRadius: 50, background: "white", color: C.mid, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>登出</button>
+        </div>
+      </div>
           <button onClick={onLogout} style={{ fontSize: 12, padding: "6px 14px", border: `1px solid ${C.border}`, borderRadius: 50, background: "white", color: C.mid, cursor: "pointer", fontFamily: "inherit" }}>登出</button>
         </div>
       </div>
 
       <div style={{ maxWidth: 1000, margin: "0 auto", padding: "28px 24px" }}>
         {/* Metrics */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 24 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10, marginBottom: 20 }}>
           {[
             { label: "總訂單數", value: orders.length, unit: "筆" },
             { label: "總營收", value: `NT$${totalRevenue.toLocaleString()}`, unit: "" },
@@ -3109,7 +3131,6 @@ function LoginGate({ onLogin }) {
         />
         {err && <div style={{ fontSize:12, color:DC.red, marginBottom:10 }}>密碼錯誤</div>}
         <button onClick={submit} style={{ width:"100%", padding:"12px", background:DC.sage, color:"white", border:"none", borderRadius:50, fontFamily:"inherit", fontSize:14, fontWeight:600, cursor:"pointer" }}>登入</button>
-        <div style={{ fontSize:11, color:DC.lighter, marginTop:14 }}>預設密碼：pawformula2026</div>
       </div>
     </div>
   );
@@ -3118,13 +3139,27 @@ function LoginGate({ onLogin }) {
 // ── MAIN DASHBOARD ────────────────────────────────────────────────
 function DashboardApp() {
   const [loggedIn,     setLoggedIn]  = useState(false);
-  const [orders,       setOrders]    = useState(MOCK);
+  const [orders,       setOrders]    = useState([]);
+  const [loading,      setLoading]   = useState(false);
   const [selected,     setSelected]  = useState(null);
   const [filterStatus, setFilter]    = useState("all");
   const [searchQ,      setSearchQ]   = useState("");
   const [activeTab,    setActiveTab] = useState("orders");
 
-  const updateOrder = (id, changes) => {
+  const fetchOrders = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("customized_orders")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (!error && data) setOrders(data);
+    setLoading(false);
+  };
+
+  useEffect(() => { if (loggedIn) fetchOrders(); }, [loggedIn]);
+
+  const updateOrder = async (id, changes) => {
+    await supabase.from("customized_orders").update(changes).eq("id", id);
     setOrders(prev => prev.map(o => o.id===id ? {...o,...changes} : o));
   };
 
@@ -3151,47 +3186,46 @@ function DashboardApp() {
     <div style={{ fontFamily:"'Noto Sans TC',sans-serif", background:DC.bg, minHeight:"100vh", color:DC.dark }}>
 
       {/* NAV */}
-      <div style={{ background:DC.surface, borderBottom:`1px solid ${DC.border}`, padding:"0 28px", height:56, display:"flex", alignItems:"center", justifyContent:"space-between", position:"sticky", top:0, zIndex:100, boxShadow:"0 1px 3px rgba(0,0,0,.06)" }}>
-        <div style={{ display:"flex", alignItems:"center", gap:24 }}>
-          <div style={{ fontFamily:"Georgia,serif", fontSize:19, fontWeight:600, color:DC.dark }}>
+      <div style={{ background:DC.surface, borderBottom:`1px solid ${DC.border}`, padding:"0 16px", height:56, display:"flex", alignItems:"center", justifyContent:"space-between", position:"sticky", top:0, zIndex:100, boxShadow:"0 1px 3px rgba(0,0,0,.06)" }}>
+        <div style={{ display:"flex", alignItems:"center", gap:12, minWidth:0 }}>
+          <div style={{ fontFamily:"Georgia,serif", fontSize:17, fontWeight:600, color:DC.dark, whiteSpace:"nowrap" }}>
             Paw<span style={{ color:DC.sage }}>Formula</span>
-            <span style={{ fontSize:11, color:DC.light, marginLeft:8, fontFamily:"inherit", fontWeight:400 }}>客製化訂單管理</span>
           </div>
           <div style={{ display:"flex", gap:2 }}>
-            {[{id:"orders",label:"訂單列表"},{id:"analytics",label:"數據總覽"}].map(t=>(
-              <button key={t.id} onClick={()=>setActiveTab(t.id)} style={{ padding:"5px 14px", borderRadius:50, fontSize:13, fontWeight:activeTab===t.id?600:400, color:activeTab===t.id?DC.sage:DC.mid, background:activeTab===t.id?DC.sageL:"transparent", border:"none", cursor:"pointer" }}>
+            {[{id:"orders",label:"訂單"},{id:"analytics",label:"數據"}].map(t=>(
+              <button key={t.id} onClick={()=>setActiveTab(t.id)} style={{ padding:"5px 10px", borderRadius:50, fontSize:12, fontWeight:activeTab===t.id?600:400, color:activeTab===t.id?DC.sage:DC.mid, background:activeTab===t.id?DC.sageL:"transparent", border:"none", cursor:"pointer", whiteSpace:"nowrap" }}>
                 {t.label}
               </button>
             ))}
           </div>
         </div>
-        <div style={{ display:"flex", gap:8, alignItems:"center" }}>
-          <a href="#" style={{ padding:"5px 12px", borderRadius:50, fontSize:12, color:DC.mid, border:`1px solid ${DC.border}`, textDecoration:"none" }}>客戶網站</a>
-          <a href="#" style={{ padding:"5px 12px", borderRadius:50, fontSize:12, color:DC.mid, border:`1px solid ${DC.border}`, textDecoration:"none" }}>後台系統</a>
-          <button onClick={()=>setLoggedIn(false)} style={{ width:30, height:30, borderRadius:"50%", background:DC.sageL, border:"none", cursor:"pointer", fontSize:12, color:DC.sage, fontWeight:700 }}>登出</button>
+        <div style={{ display:"flex", gap:6, alignItems:"center" }}>
+          <a href="/" style={{ padding:"5px 10px", borderRadius:50, fontSize:11, color:DC.mid, border:`1px solid ${DC.border}`, textDecoration:"none", whiteSpace:"nowrap" }}>官網</a>
+          <a href="/admin" style={{ padding:"5px 10px", borderRadius:50, fontSize:11, color:DC.mid, border:`1px solid ${DC.border}`, textDecoration:"none", whiteSpace:"nowrap" }}>後台</a>
+          <button onClick={()=>setLoggedIn(false)} style={{ padding:"5px 10px", borderRadius:50, fontSize:11, background:DC.sageL, border:"none", cursor:"pointer", color:DC.sage, fontWeight:600, whiteSpace:"nowrap" }}>登出</button>
         </div>
       </div>
 
-      <div style={{ maxWidth:1140, margin:"0 auto", padding:"22px 20px" }}>
+      <div style={{ maxWidth:1140, margin:"0 auto", padding:"16px 14px" }}>
 
         {/* ANALYTICS */}
         {activeTab==="analytics" && (
           <div>
-            <div style={{ fontFamily:"Georgia,serif", fontSize:20, fontWeight:500, color:DC.dark, marginBottom:18 }}>數據總覽</div>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:24 }}>
+            <div style={{ fontFamily:"Georgia,serif", fontSize:18, fontWeight:500, color:DC.dark, marginBottom:16 }}>數據總覽</div>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:10, marginBottom:20 }}>
               {[
                 { label:"總訂單", value:orders.length, color:DC.dark },
                 { label:"新訂單", value:counts.new||0, color:DC.blue },
                 { label:"生產中", value:counts.in_production||0, color:DC.earth },
                 { label:"已出貨", value:counts.shipped||0, color:DC.sage },
               ].map(c=>(
-                <div key={c.label} style={{ background:DC.surface, border:`1px solid ${DC.border}`, borderRadius:12, padding:"16px 18px" }}>
-                  <div style={{ fontFamily:"Georgia,serif", fontSize:26, fontWeight:700, color:c.color }}>{c.value}</div>
+                <div key={c.label} style={{ background:DC.surface, border:`1px solid ${DC.border}`, borderRadius:12, padding:"14px 16px" }}>
+                  <div style={{ fontFamily:"Georgia,serif", fontSize:24, fontWeight:700, color:c.color }}>{c.value}</div>
                   <div style={{ fontSize:12, color:DC.mid, marginTop:4 }}>{c.label}</div>
                 </div>
               ))}
             </div>
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(280px, 1fr))", gap:16 }}>
               <div style={{ background:DC.surface, border:`1px solid ${DC.border}`, borderRadius:12, padding:"18px 20px" }}>
                 <div style={{ fontSize:13, fontWeight:600, color:DC.dark, marginBottom:14 }}>健康狀況分布</div>
                 {[{k:"ckd",l:"腎臟病 CKD"},{k:"cardiac",l:"心臟病"},{k:"arthritis",l:"關節炎"},{k:"obesity",l:"肥胖"},{k:"skin",l:"皮膚過敏"},{k:"pancreatitis",l:"胰臟炎"}].map(({k,l})=>{
@@ -3260,7 +3294,11 @@ function DashboardApp() {
             </div>
 
 
-            {filtered.length===0 ? (
+            {loading ? (
+              <div style={{ textAlign:"center", padding:"48px 0", color:DC.lighter }}>
+                <div style={{ fontSize:14 }}>載入中…</div>
+              </div>
+            ) : filtered.length===0 ? (
               <div style={{ textAlign:"center", padding:"48px 0", color:DC.lighter }}>
                 <div style={{ fontSize:14 }}>找不到符合條件的訂單</div>
               </div>
