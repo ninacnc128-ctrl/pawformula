@@ -3117,7 +3117,7 @@ function LoginGate({ onLogin }) {
 
 // ── MAIN DASHBOARD ────────────────────────────────────────────────
 function DashboardApp() {
-  const [loggedIn,     setLoggedIn]  = useState(true);
+  const [loggedIn,     setLoggedIn]  = useState(false);
   const [orders,       setOrders]    = useState(MOCK);
   const [selected,     setSelected]  = useState(null);
   const [filterStatus, setFilter]    = useState("all");
