@@ -868,12 +868,16 @@ function IntakePage({ setPage, cart, setCart }) {
                     assigned_recipe: plan,
                     delivery,
                     plan_price: selectedPlan?.price || 0,
-                  });
+                }).select().single();
+
+              if (cdError) console.error("customized_orders insert error:", cdError);
 
                   setCart(c=>[...c,{
                     emoji: selectedPlan.emoji, name: selectedPlan.name,
                     stage: "", petName, type:`客製化訂閱 ${delivery==="weekly"?"每週":delivery==="biweekly"?"每兩週":"每月"}`,
-                    price: selectedPlan.price, qty:1
+                    price: selectedPlan.price, qty:1,
+                    customizedOrderId: cdData?.id ?? null,
+                    petProfile,
                   }]);
                   addons.forEach(a=>{
                     const price = parseInt(a.match(/\d+/)?.[0]||0);
@@ -1515,6 +1519,20 @@ function CheckoutPage({ cart, setCart, setPage }) {
       }));
       const { error: itemsError } = await supabase.from("order_items").insert(items);
       if (itemsError) throw itemsError;
+            // 4. Link customized_orders with owner contact info
+      const customizedItems = cart.filter(item => item.customizedOrderId);
+      for (const item of customizedItems) {
+        await supabase.from("customized_orders").update({
+          pet_profile: {
+            ...item.petProfile,
+            ownerName: info.name,
+            ownerPhone: info.phone,
+            ownerEmail: info.email,
+            address: `台北市${info.district}${info.address}`,
+          },
+          status: "pending",
+        }).eq("id", item.customizedOrderId);
+      }
 
       setPlaced(true);
     } catch (err) {
@@ -3176,6 +3194,7 @@ function DashboardApp() {
       .from("customized_orders")
       .select("*")
       .order("created_at", { ascending: false });
+    if (error) console.error("customized_orders fetch error:", error);
     if (!error && data) setOrders(data);
     setLoading(false);
   };
@@ -3343,3 +3362,4 @@ function DashboardApp() {
     </div>
   );
 }
+Fiz customized orders
