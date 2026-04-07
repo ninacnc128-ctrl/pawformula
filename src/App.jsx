@@ -1954,9 +1954,6 @@ function AdminDashboard({ onLogout }) {
           <button onClick={onLogout} style={{ fontSize: 11, padding: "5px 10px", border: `1px solid ${C.border}`, borderRadius: 50, background: "white", color: C.mid, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>登出</button>
         </div>
       </div>
-          <button onClick={onLogout} style={{ fontSize: 12, padding: "6px 14px", border: `1px solid ${C.border}`, borderRadius: 50, background: "white", color: C.mid, cursor: "pointer", fontFamily: "inherit" }}>登出</button>
-        </div>
-      </div>
 
       <div style={{ maxWidth: 1000, margin: "0 auto", padding: "28px 24px" }}>
         {/* Metrics */}
@@ -3362,4 +3359,4 @@ function DashboardApp() {
     </div>
   );
 }
-Fiz customized orders
+
